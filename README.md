@@ -35,7 +35,8 @@ The system enforces strict role-based access control (RBAC) to ensure different 
 - Java Spring Boot 3/4
 - Spring Security + JWT Authentication
 - Spring Data JPA (Hibernate)
-- MySQL Database
+- PostgreSQL Database
+- Docker & Docker Compose
 
 **Frontend (Angular)**
 - Angular 17+ (Standalone Components)
@@ -50,21 +51,43 @@ The system enforces strict role-based access control (RBAC) to ensure different 
 ### 🔑 Environment Configuration (For Collaborators)
 Before running the application, you must configure the environment variables for both the backend and frontend. We use `.env.example` files as templates.
 
-1. **Backend:** Duplicate `backend/.env.example` and rename it to `backend/.env`. Fill in your MySQL database credentials (`DB_PASSWORD`) and a secure `JWT_SECRET`.
+1. **Backend:** Duplicate `backend/.env.example` and rename it to `backend/.env`. Fill in your PostgreSQL database credentials (`DB_PASSWORD`) and a secure `JWT_SECRET`.
 2. **Frontend:** Duplicate `frontend/.env.example` and rename it to `frontend/.env`. Ensure the `API_URL` points to your running backend instance.
 
 **Note:** Never commit actual `.env` files to version control. They are already added to `.gitignore`.
 
-### Prerequisites
+### 🐳 Running with Docker (Recommended)
+
+The easiest way to run the entire stack (PostgreSQL Database, Spring Boot Backend, Angular Frontend) is using Docker Compose. The environment is pre-configured to be stateful and connect seamlessly.
+
+#### Prerequisites
+- **Docker** and **Docker Compose** installed on your machine.
+
+#### Steps
+1. Navigate to the root directory `JEE`.
+2. Run the following command to build and start all services in the background:
+   ```bash
+   docker-compose up -d --build
+   ```
+3. Access the application in your browser at `http://localhost:4200`.
+4. The backend API will be available at `http://localhost:8080/api/v1`.
+
+*Note: The database state is persisted automatically through a Docker volume (`postgres_data`). To stop the application without losing data, simply run `docker-compose down`.*
+
+---
+
+### 💻 Manual Setup (Alternative)
+
+#### Prerequisites
 - **Java 17+** installed
 - **Node.js** (v18+) and **npm** installed
 - **Angular CLI** installed globally (`npm install -g @angular/cli`)
-- **MySQL** installed and running
+- **PostgreSQL** installed and running
 
 ### 1. Backend Setup (Spring Boot)
-1. Open MySQL and create a database named `mediflow` (or according to your `application.properties`):
+1. Open your PostgreSQL terminal and create a database:
    ```sql
-   CREATE DATABASE mediflow;
+   CREATE DATABASE mediflow_db;
    ```
 2. Navigate to the backend directory:
    ```bash

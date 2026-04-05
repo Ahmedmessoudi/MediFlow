@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mediflow-db:
+    image: postgres:15-alpine
+    container_name: mediflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: SecureMediFlow_DbPass!2026
+      POSTGRES_DB: mediflow_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mediflow-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mediflow-backend
+    restart: unless-stopped
+    depends_on:
+      - mediflow-db
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./backend/.env
+    # We override DB_URL in docker-compose so we force it to connect to the db service container internally
+    environment:
+      - DB_URL=jdbc:postgresql://mediflow-db:5432/mediflow_db
+
+  mediflow-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mediflow-frontend
+    restart: unless-stopped
+    depends_on:
+      - mediflow-backend
+    ports:
+      - "4200:80"
+
+volumes:
+  postgres_data:
