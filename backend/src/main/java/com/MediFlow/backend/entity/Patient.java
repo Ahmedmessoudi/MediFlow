@@ -1,9 +1,11 @@
 package com.MediFlow.backend.entity;
 
+import com.MediFlow.backend.enums.Gender;
 import com.MediFlow.backend.enums.PatientCondition;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,10 +18,27 @@ public class Patient {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String fullName;
 
-    @Column(nullable = false)
     private Integer age;
+
+    private LocalDate dateOfBirth;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    private String phone;
+
+    private String addressCity;
+
+    private String addressStreet;
+
+    private String emergencyContactName;
+
+    private String emergencyContactPhone;
+
+    @Column(columnDefinition = "TEXT")
+    private String medicalNotes;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

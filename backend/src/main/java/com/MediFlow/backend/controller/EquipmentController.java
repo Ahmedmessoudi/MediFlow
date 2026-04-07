@@ -30,6 +30,18 @@ public class EquipmentController {
         return ResponseEntity.ok(equipmentService.findById(id));
     }
 
+    @GetMapping("/by-ward/{wardId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE')")
+    public ResponseEntity<List<Equipment>> getByWardId(@PathVariable Long wardId) {
+        return ResponseEntity.ok(equipmentService.findByWardId(wardId));
+    }
+
+    @GetMapping("/by-room/{roomId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE')")
+    public ResponseEntity<List<Equipment>> getByRoomId(@PathVariable Long roomId) {
+        return ResponseEntity.ok(equipmentService.findByRoomId(roomId));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Equipment> create(@RequestBody Equipment equipment) {

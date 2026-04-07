@@ -28,7 +28,7 @@ interface KpiCard {
       </div>
 
       <!-- KPI Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         @for (kpi of kpis(); track kpi.title) {
           <div class="bg-card rounded-xl border hover:shadow-md transition-shadow p-4">
             <div class="flex items-center justify-between">
@@ -164,6 +164,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
             trend: '+8%', up: true, color: 'text-warning'
           },
+          {
+            title: 'Total Wards', value: stats.totalWards,
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+            trend: '0%', up: true, color: 'text-primary'
+          },
         ]);
       },
       error: () => {
@@ -173,6 +178,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           { title: 'Occupied Beds', value: 0, icon: '', trend: '0%', up: true, color: 'text-destructive' },
           { title: 'Available Beds', value: 0, icon: '', trend: '0%', up: false, color: 'text-success' },
           { title: 'ICU Usage', value: '0%', icon: '', trend: '0%', up: true, color: 'text-warning' },
+          { title: 'Total Wards', value: 0, icon: '', trend: '0%', up: true, color: 'text-primary' },
         ]);
       }
     });

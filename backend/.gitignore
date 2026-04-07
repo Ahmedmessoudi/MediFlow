@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+boot_log_utf8.txt
+boot_log.txt
+

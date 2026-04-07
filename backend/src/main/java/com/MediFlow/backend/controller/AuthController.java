@@ -2,7 +2,6 @@ package com.MediFlow.backend.controller;
 
 import com.MediFlow.backend.dto.AuthResponse;
 import com.MediFlow.backend.dto.LoginRequest;
-import com.MediFlow.backend.dto.RegisterRequest;
 import com.MediFlow.backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +20,5 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
     }
 }

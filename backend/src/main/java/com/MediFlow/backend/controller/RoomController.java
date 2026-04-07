@@ -30,6 +30,12 @@ public class RoomController {
         return ResponseEntity.ok(roomService.findById(id));
     }
 
+    @GetMapping("/by-ward/{wardId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE')")
+    public ResponseEntity<List<Room>> getByWardId(@PathVariable Long wardId) {
+        return ResponseEntity.ok(roomService.findByWardId(wardId));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Room> create(@RequestBody Room room) {

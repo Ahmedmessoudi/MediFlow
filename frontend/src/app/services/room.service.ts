@@ -13,6 +13,14 @@ export class RoomService {
     return this.http.get<Room[]>(this.API);
   }
 
+  getById(id: number): Observable<Room> {
+    return this.http.get<Room>(`${this.API}/${id}`);
+  }
+
+  getByWardId(wardId: number): Observable<Room[]> {
+    return this.http.get<Room[]>(`${this.API}/by-ward/${wardId}`);
+  }
+
   create(room: Room): Observable<Room> {
     return this.http.post<Room>(this.API, room);
   }

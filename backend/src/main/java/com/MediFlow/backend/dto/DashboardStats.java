@@ -12,5 +12,6 @@ public class DashboardStats {
     private long totalPatients;
     private long criticalPatients;
     private long totalRooms;
+    private long totalWards;
     private long totalEquipment;
 }

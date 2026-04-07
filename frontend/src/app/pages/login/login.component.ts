@@ -27,10 +27,8 @@ interface RoleOption {
       <div class="w-full max-w-sm shadow-2xl border-0 rounded-xl bg-card animate-fade-in relative z-10">
         <!-- Header -->
         <div class="text-center pb-2 pt-6 px-6">
-          <div class="mx-auto mb-3 h-10 w-10 rounded-xl gradient-medical flex items-center justify-center shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>
-            </svg>
+          <div class="mx-auto mb-4 h-24 w-24 flex items-center justify-center">
+            <img src="/logo.png" alt="MediFlow Logo" class="h-24 w-24 object-contain drop-shadow-md" />
           </div>
           <h1 class="text-xl font-bold text-foreground">MediFlow</h1>
           <p class="text-muted-foreground text-xs">Hospital Resource & Bed Management</p>

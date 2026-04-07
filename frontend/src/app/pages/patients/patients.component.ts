@@ -48,7 +48,7 @@ import { Patient, PatientCondition } from '../../models/patient.model';
             <tbody>
               @for (p of filteredPatients(); track p.id) {
                 <tr class="border-b hover:bg-muted/50 transition-colors">
-                  <td class="py-2 px-3 font-medium">{{ p.name }}</td>
+                  <td class="py-2 px-3 font-medium">{{ p.fullName }}</td>
                   <td class="py-2 px-3">{{ p.age }}</td>
                   <td class="py-2 px-3">
                     <span class="text-[10px] px-2 py-0.5 rounded-full border" [class]="conditionClass(p.condition)">
@@ -100,7 +100,7 @@ import { Patient, PatientCondition } from '../../models/patient.model';
             <form (ngSubmit)="addPatient()" class="space-y-3">
               <div class="space-y-1.5">
                 <label class="text-xs font-medium">Full Name</label>
-                <input [(ngModel)]="newPatient.name" name="name" required placeholder="Patient name"
+                <input [(ngModel)]="newPatient.fullName" name="fullName" required placeholder="Patient name"
                   class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div class="space-y-1.5">
@@ -134,7 +134,7 @@ export class PatientsComponent implements OnInit {
   patients = signal<Patient[]>([]);
   searchTerm = '';
   showDialog = signal(false);
-  newPatient: Patient = { name: '', age: 0, condition: 'NORMAL' };
+  newPatient: Patient = { fullName: '', age: 0, condition: 'NORMAL' };
 
   canCreate = false;
   canDelete = false;
@@ -166,7 +166,7 @@ export class PatientsComponent implements OnInit {
 
   filteredPatients() {
     const term = this.searchTerm.toLowerCase();
-    return this.patients().filter(p => p.name.toLowerCase().includes(term));
+    return this.patients().filter(p => p.fullName?.toLowerCase().includes(term));
   }
 
   conditionClass(condition: PatientCondition): string {
@@ -182,7 +182,7 @@ export class PatientsComponent implements OnInit {
     this.patientService.create(this.newPatient).subscribe({
       next: () => {
         this.showDialog.set(false);
-        this.newPatient = { name: '', age: 0, condition: 'NORMAL' };
+        this.newPatient = { fullName: '', age: 0, condition: 'NORMAL' };
         this.loadPatients();
       }
     });

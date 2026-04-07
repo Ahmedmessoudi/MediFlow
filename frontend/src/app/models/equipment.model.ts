@@ -5,5 +5,6 @@ export interface Equipment {
   name: string;
   type: string;
   status: EquipmentStatus;
-  room?: any;
+  room?: any; // Room object
+  ward?: any; // Ward object
 }

@@ -2,9 +2,17 @@ export type PatientCondition = 'NORMAL' | 'SERIOUS' | 'CRITICAL';
 
 export interface Patient {
   id?: number;
-  name: string;
+  fullName: string;
   age: number;
   condition: PatientCondition;
+  dateOfBirth?: string;
+  gender?: string;
+  phone?: string;
+  addressCity?: string;
+  addressStreet?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  medicalNotes?: string;
   admissionDate?: string;
   dischargeDate?: string;
   bed?: Bed | null;

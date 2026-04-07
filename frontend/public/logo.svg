@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Outer Circle border -->
+  <circle cx="12" cy="12" r="10" stroke="#0ea5e9" stroke-width="1.5"/>
+  
+  <!-- Medical Cross -->
+  <path d="M12 7v10M7 12h10" stroke="#22d3ee" stroke-width="3.5" stroke-linecap="round"/>
+  
+  <!-- Supportive Hand (simplified for 16x16 visibility) -->
+  <path d="M12 22c5 0 9-4 9-9 0-1-1-2-2-1.5C18 12.5 16 16 12 16c-3 0-5 2-5 4s2 2 5 2z" fill="#0284c7" opacity="0.9"/>
+</svg>

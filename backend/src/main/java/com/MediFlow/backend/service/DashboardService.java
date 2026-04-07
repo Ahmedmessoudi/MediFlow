@@ -8,6 +8,7 @@ import com.MediFlow.backend.repository.BedRepository;
 import com.MediFlow.backend.repository.EquipmentRepository;
 import com.MediFlow.backend.repository.PatientRepository;
 import com.MediFlow.backend.repository.RoomRepository;
+import com.MediFlow.backend.repository.WardRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,15 +17,18 @@ public class DashboardService {
     private final BedRepository bedRepository;
     private final PatientRepository patientRepository;
     private final RoomRepository roomRepository;
+    private final WardRepository wardRepository;
     private final EquipmentRepository equipmentRepository;
 
     public DashboardService(BedRepository bedRepository,
                             PatientRepository patientRepository,
                             RoomRepository roomRepository,
+                            WardRepository wardRepository,
                             EquipmentRepository equipmentRepository) {
         this.bedRepository = bedRepository;
         this.patientRepository = patientRepository;
         this.roomRepository = roomRepository;
+        this.wardRepository = wardRepository;
         this.equipmentRepository = equipmentRepository;
     }
 
@@ -52,6 +56,7 @@ public class DashboardService {
                 .totalPatients(totalPatients)
                 .criticalPatients(criticalPatients)
                 .totalRooms(roomRepository.count())
+                .totalWards(wardRepository.count())
                 .totalEquipment(equipmentRepository.count())
                 .build();
     }

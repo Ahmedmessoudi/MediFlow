@@ -1,12 +1,16 @@
 package com.MediFlow.backend.controller;
 
+import com.MediFlow.backend.dto.PatientRequest;
 import com.MediFlow.backend.entity.Patient;
+import com.MediFlow.backend.enums.PatientCondition;
 import com.MediFlow.backend.service.PatientService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -32,14 +36,14 @@ public class PatientController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
-    public ResponseEntity<Patient> create(@RequestBody Patient patient) {
-        return ResponseEntity.ok(patientService.create(patient));
+    public ResponseEntity<Patient> create(@Valid @RequestBody PatientRequest request) {
+        return ResponseEntity.ok(patientService.create(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','NURSE')")
-    public ResponseEntity<Patient> update(@PathVariable Long id, @RequestBody Patient patient) {
-        return ResponseEntity.ok(patientService.update(id, patient));
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE')")
+    public ResponseEntity<Patient> update(@PathVariable Long id, @Valid @RequestBody PatientRequest request) {
+        return ResponseEntity.ok(patientService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -61,9 +65,10 @@ public class PatientController {
         return ResponseEntity.ok(patientService.discharge(id));
     }
 
-    @PutMapping("/{id}/mark-critical")
+    @PutMapping("/{id}/condition")
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
-    public ResponseEntity<Patient> markCritical(@PathVariable Long id) {
-        return ResponseEntity.ok(patientService.markCritical(id));
+    public ResponseEntity<Patient> updateCondition(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        PatientCondition condition = PatientCondition.valueOf(body.get("condition").toUpperCase());
+        return ResponseEntity.ok(patientService.updateCondition(id, condition));
     }
 }

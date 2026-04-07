@@ -1,10 +1,12 @@
 package com.MediFlow.backend.service;
 
+import com.MediFlow.backend.dto.PatientRequest;
 import com.MediFlow.backend.entity.Bed;
 import com.MediFlow.backend.entity.Patient;
 import com.MediFlow.backend.enums.BedStatus;
 import com.MediFlow.backend.enums.BedType;
 import com.MediFlow.backend.enums.PatientCondition;
+import com.MediFlow.backend.exception.ResourceNotFoundException;
 import com.MediFlow.backend.repository.BedRepository;
 import com.MediFlow.backend.repository.PatientRepository;
 import org.springframework.stereotype.Service;
@@ -30,19 +32,46 @@ public class PatientService {
 
     public Patient findById(Long id) {
         return patientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient", id));
     }
 
-    public Patient create(Patient patient) {
-        patient.setAdmissionDate(LocalDateTime.now());
+    public Patient create(PatientRequest request) {
+        Patient patient = Patient.builder()
+                .fullName(request.getFullName())
+                .age(request.getAge())
+                .dateOfBirth(request.getDateOfBirth())
+                .gender(request.getGender())
+                .phone(request.getPhone())
+                .addressCity(request.getAddressCity())
+                .addressStreet(request.getAddressStreet())
+                .emergencyContactName(request.getEmergencyContactName())
+                .emergencyContactPhone(request.getEmergencyContactPhone())
+                .medicalNotes(request.getMedicalNotes())
+                .condition(request.getCondition())
+                .admissionDate(LocalDateTime.now())
+                .build();
         return patientRepository.save(patient);
     }
 
-    public Patient update(Long id, Patient updatedPatient) {
+    public Patient update(Long id, PatientRequest request) {
         Patient patient = findById(id);
-        patient.setName(updatedPatient.getName());
-        patient.setAge(updatedPatient.getAge());
-        patient.setCondition(updatedPatient.getCondition());
+        patient.setFullName(request.getFullName());
+        patient.setAge(request.getAge());
+        patient.setDateOfBirth(request.getDateOfBirth());
+        patient.setGender(request.getGender());
+        patient.setPhone(request.getPhone());
+        patient.setAddressCity(request.getAddressCity());
+        patient.setAddressStreet(request.getAddressStreet());
+        patient.setEmergencyContactName(request.getEmergencyContactName());
+        patient.setEmergencyContactPhone(request.getEmergencyContactPhone());
+        patient.setMedicalNotes(request.getMedicalNotes());
+        patient.setCondition(request.getCondition());
+        return patientRepository.save(patient);
+    }
+
+    public Patient updateCondition(Long id, PatientCondition condition) {
+        Patient patient = findById(id);
+        patient.setCondition(condition);
         return patientRepository.save(patient);
     }
 
@@ -61,14 +90,13 @@ public class PatientService {
         Patient patient = findById(patientId);
 
         if (patient.getBed() != null) {
-            throw new RuntimeException("Patient already has a bed assigned");
+            throw new IllegalArgumentException("Patient already has a bed assigned");
         }
 
-        // Smart allocation: CRITICAL → ICU, otherwise → NORMAL
         BedType requiredType = (patient.getCondition() == PatientCondition.CRITICAL) ? BedType.ICU : BedType.NORMAL;
 
         Bed bed = bedRepository.findFirstByTypeAndStatus(requiredType, BedStatus.AVAILABLE)
-                .orElseThrow(() -> new RuntimeException("No " + requiredType + " beds available! Alert: Patient waiting for bed assignment."));
+                .orElseThrow(() -> new IllegalArgumentException("No " + requiredType + " beds available! Alert: Patient waiting for bed assignment."));
 
         bed.setStatus(BedStatus.OCCUPIED);
         bedRepository.save(bed);
@@ -89,12 +117,6 @@ public class PatientService {
         }
 
         patient.setDischargeDate(LocalDateTime.now());
-        return patientRepository.save(patient);
-    }
-
-    public Patient markCritical(Long patientId) {
-        Patient patient = findById(patientId);
-        patient.setCondition(PatientCondition.CRITICAL);
         return patientRepository.save(patient);
     }
 }

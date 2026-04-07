@@ -26,4 +26,8 @@ public class Equipment {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id")
     private Room room;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ward_id")
+    private Ward ward;
 }

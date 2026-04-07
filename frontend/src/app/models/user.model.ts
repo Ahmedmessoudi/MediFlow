@@ -2,9 +2,11 @@ export type UserRole = 'ADMIN' | 'DOCTOR' | 'NURSE' | 'RECEPTIONIST';
 
 export interface AppUser {
   id?: number;
+  fullName: string;
   username: string;
+  email: string;
   role: UserRole;
-  password?: string;
+  active: boolean;
 }
 
 export interface LoginRequest {
@@ -13,8 +15,10 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+  fullName: string;
   username: string;
-  password: string;
+  email: string;
+  password?: string;
   role: string;
 }
 
@@ -25,7 +29,7 @@ export interface AuthResponse {
 }
 
 export const ROLE_ROUTES: Record<UserRole, string[]> = {
-  ADMIN: ['/dashboard', '/patients', '/beds', '/rooms', '/admin'],
+  ADMIN: ['/dashboard', '/patients', '/beds', '/wards', '/rooms', '/admin'],
   DOCTOR: ['/dashboard', '/patients', '/beds'],
   NURSE: ['/dashboard', '/patients', '/beds'],
   RECEPTIONIST: ['/patients', '/beds'],
@@ -42,6 +46,7 @@ export type Permission =
   | 'patient:create' | 'patient:read' | 'patient:update' | 'patient:delete'
   | 'patient:update_condition' | 'patient:assign_bed' | 'patient:discharge'
   | 'bed:read' | 'bed:manage'
+  | 'ward:read' | 'ward:manage'
   | 'room:read' | 'room:manage'
   | 'equipment:read' | 'equipment:manage'
   | 'user:manage'
@@ -52,6 +57,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'patient:create', 'patient:read', 'patient:update', 'patient:delete',
     'patient:update_condition', 'patient:assign_bed', 'patient:discharge',
     'bed:read', 'bed:manage',
+    'ward:read', 'ward:manage',
     'room:read', 'room:manage',
     'equipment:read', 'equipment:manage',
     'user:manage',

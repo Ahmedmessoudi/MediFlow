@@ -66,7 +66,7 @@ import { Patient } from '../../models/patient.model';
               @if (getPatientForBed(bed)) {
                 <div class="flex items-center gap-1.5 mt-2 pt-2 border-t">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  <span class="text-xs text-foreground flex-1">{{ getPatientForBed(bed)?.name }}</span>
+                  <span class="text-xs text-foreground flex-1">{{ getPatientForBed(bed)?.fullName }}</span>
                 </div>
               } @else if (bed.status === 'AVAILABLE') {
                 <div class="flex items-center gap-1.5 mt-2 pt-2 border-t">
@@ -75,7 +75,7 @@ import { Patient } from '../../models/patient.model';
                 </div>
               }
 
-              <div class="text-[10px] text-muted-foreground mt-1.5">{{ bed.room?.ward || 'N/A' }} — {{ bed.room?.name || '' }}</div>
+              <div class="text-[10px] text-muted-foreground mt-1.5">{{ bed.room?.ward?.name || 'N/A' }} — {{ bed.room?.name || '' }}</div>
             </div>
           </div>
         }
@@ -103,7 +103,7 @@ export class BedsComponent implements OnInit {
   ngOnInit() {
     this.bedService.getAll().subscribe(beds => {
       this.beds.set(beds);
-      const wardSet = new Set(beds.map(b => b.room?.ward).filter(Boolean) as string[]);
+      const wardSet = new Set(beds.map(b => b.room?.ward?.name).filter(Boolean) as string[]);
       this.wards.set([...wardSet]);
     });
     this.patientService.getAll().subscribe(patients => this.patients.set(patients));
@@ -113,7 +113,7 @@ export class BedsComponent implements OnInit {
     return this.beds().filter(b => {
       if (this.typeFilter !== 'all' && b.type !== this.typeFilter) return false;
       if (this.statusFilter !== 'all' && b.status !== this.statusFilter) return false;
-      if (this.wardFilter !== 'all' && b.room?.ward !== this.wardFilter) return false;
+      if (this.wardFilter !== 'all' && b.room?.ward?.name !== this.wardFilter) return false;
       return true;
     });
   }

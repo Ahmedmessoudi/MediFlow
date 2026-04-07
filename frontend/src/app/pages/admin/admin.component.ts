@@ -30,19 +30,34 @@ import { AppUser, UserRole } from '../../models/user.model';
         <table class="w-full text-xs">
           <thead>
             <tr class="border-b bg-muted/50">
-              <th class="text-left py-2 px-3 font-medium text-muted-foreground">Username</th>
+              <th class="text-left py-2 px-3 font-medium text-muted-foreground">Full Name</th>
+              <th class="text-left py-2 px-3 font-medium text-muted-foreground">Username / Email</th>
               <th class="text-left py-2 px-3 font-medium text-muted-foreground">Role</th>
+              <th class="text-center py-2 px-3 font-medium text-muted-foreground">Status</th>
               <th class="text-right py-2 px-3 font-medium text-muted-foreground">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (u of users(); track u.id) {
               <tr class="border-b hover:bg-muted/50 transition-colors">
-                <td class="py-2 px-3 font-medium">{{ u.username }}</td>
+                <td class="py-2 px-3">
+                  <div class="font-medium truncate max-w-[150px]" [title]="u.fullName">{{ u.fullName }}</div>
+                </td>
+                <td class="py-2 px-3">
+                  <div class="font-medium truncate">{{ u.username }}</div>
+                  <div class="text-muted-foreground truncate">{{ u.email }}</div>
+                </td>
                 <td class="py-2 px-3">
                   <span class="text-[10px] px-2 py-0.5 rounded-full border" [class]="roleClass(u.role)">
                     {{ u.role }}
                   </span>
+                </td>
+                <td class="py-2 px-3 text-center">
+                  <button (click)="toggleStatus(u.id!)" 
+                    class="text-[10px] px-2 py-0.5 rounded-full border transition-colors cursor-pointer"
+                    [class]="u.active ? 'bg-success/15 text-success border-success/30 hover:bg-success/25' : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'">
+                    {{ u.active ? 'Active' : 'Inactive' }}
+                  </button>
                 </td>
                 <td class="py-2 px-3 text-right">
                   <div class="flex items-center justify-end gap-1">
@@ -64,9 +79,21 @@ import { AppUser, UserRole } from '../../models/user.model';
           <div class="bg-card rounded-xl shadow-2xl w-full max-w-md p-6 animate-fade-in" (click)="$event.stopPropagation()">
             <h2 class="text-lg font-semibold mb-4">Add New User</h2>
             <form (ngSubmit)="addUser()" class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Full Name</label>
+                  <input [(ngModel)]="newUser.fullName" name="fullName" required placeholder="Full Name"
+                    class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Username</label>
+                  <input [(ngModel)]="newUser.username" name="username" required placeholder="Username"
+                    class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+              </div>
               <div class="space-y-2">
-                <label class="text-sm font-medium">Username</label>
-                <input [(ngModel)]="newUser.username" name="username" required placeholder="Username"
+                <label class="text-sm font-medium">Email Address</label>
+                <input [(ngModel)]="newUser.email" name="email" type="email" required placeholder="Email Address"
                   class="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div class="space-y-2">
@@ -100,7 +127,7 @@ import { AppUser, UserRole } from '../../models/user.model';
 export class AdminComponent implements OnInit {
   users = signal<AppUser[]>([]);
   showDialog = signal(false);
-  newUser = { username: '', password: '', role: 'RECEPTIONIST' };
+  newUser: any = { fullName: '', username: '', email: '', password: '', role: 'RECEPTIONIST' };
 
   constructor(private userService: UserService) {}
 
@@ -126,9 +153,17 @@ export class AdminComponent implements OnInit {
     this.userService.create(this.newUser).subscribe({
       next: () => {
         this.showDialog.set(false);
-        this.newUser = { username: '', password: '', role: 'RECEPTIONIST' };
+        this.newUser = { fullName: '', username: '', email: '', password: '', role: 'RECEPTIONIST' };
         this.loadUsers();
-      }
+      },
+      error: (err) => alert(err.error?.message || 'An error occurred while creating user')
+    });
+  }
+
+  toggleStatus(id: number) {
+    this.userService.toggleActive(id).subscribe({
+      next: () => this.loadUsers(),
+      error: (err) => alert(err.error?.message || 'Cannot toggle status')
     });
   }
 

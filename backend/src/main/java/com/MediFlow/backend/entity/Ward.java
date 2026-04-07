@@ -7,25 +7,20 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "rooms")
+@Table(name = "wards")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Room {
+public class Ward {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ward_id", nullable = false)
-    private Ward ward;
+    private String description;
 
-    @Column(nullable = false)
-    private Integer capacity;
-
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ward", fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Bed> beds;
+    private List<Room> rooms;
 }

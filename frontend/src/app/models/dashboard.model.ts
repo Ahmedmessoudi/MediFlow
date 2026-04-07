@@ -7,5 +7,6 @@ export interface DashboardStats {
   totalPatients: number;
   criticalPatients: number;
   totalRooms: number;
+  totalWards: number;
   totalEquipment: number;
 }

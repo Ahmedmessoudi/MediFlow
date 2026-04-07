@@ -14,8 +14,16 @@ export class UserService {
     return this.http.get<AppUser[]>(this.API);
   }
 
-  create(request: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.AUTH_API}/register`, request);
+  create(request: RegisterRequest): Observable<AppUser> {
+    return this.http.post<AppUser>(this.API, request);
+  }
+
+  update(id: number, request: any): Observable<AppUser> {
+    return this.http.put<AppUser>(`${this.API}/${id}`, request);
+  }
+
+  toggleActive(id: number): Observable<AppUser> {
+    return this.http.put<AppUser>(`${this.API}/${id}/toggle-active`, {});
   }
 
   delete(id: number): Observable<void> {

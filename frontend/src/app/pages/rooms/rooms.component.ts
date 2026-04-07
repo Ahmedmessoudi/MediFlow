@@ -47,7 +47,7 @@ import { Bed } from '../../models/bed.model';
               @for (r of roomsWithOccupancy(); track r.room.id) {
                 <tr class="border-b hover:bg-muted/50 transition-colors">
                   <td class="py-2 px-3 font-medium">{{ r.room.name }}</td>
-                  <td class="py-2 px-3">{{ r.room.ward }}</td>
+                  <td class="py-2 px-3">{{ r.room.ward?.name || 'Unassigned' }}</td>
                   <td class="py-2 px-3">{{ r.room.capacity }}</td>
                   <td class="py-2 px-3">{{ r.occupied }}</td>
                   <td class="py-2 px-3">

@@ -17,4 +17,5 @@ public interface BedRepository extends JpaRepository<Bed, Long> {
     long countByStatus(BedStatus status);
     long countByType(BedType type);
     long countByTypeAndStatus(BedType type, BedStatus status);
+    List<Bed> findByRoomId(Long roomId);
 }

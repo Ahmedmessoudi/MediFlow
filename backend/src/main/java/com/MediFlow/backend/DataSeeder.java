@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final WardRepository wardRepository;
     private final RoomRepository roomRepository;
     private final BedRepository bedRepository;
     private final PatientRepository patientRepository;
@@ -20,12 +21,14 @@ public class DataSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(UserRepository userRepository,
+                      WardRepository wardRepository,
                       RoomRepository roomRepository,
                       BedRepository bedRepository,
                       PatientRepository patientRepository,
                       EquipmentRepository equipmentRepository,
                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.wardRepository = wardRepository;
         this.roomRepository = roomRepository;
         this.bedRepository = bedRepository;
         this.patientRepository = patientRepository;
@@ -39,19 +42,26 @@ public class DataSeeder implements CommandLineRunner {
         if (userRepository.count() > 0) return;
 
         // --- Users ---
-        userRepository.save(User.builder().username("admin").password(passwordEncoder.encode("admin")).role(UserRole.ADMIN).build());
-        userRepository.save(User.builder().username("dr.smith").password(passwordEncoder.encode("doctor")).role(UserRole.DOCTOR).build());
-        userRepository.save(User.builder().username("nurse.jones").password(passwordEncoder.encode("nurse")).role(UserRole.NURSE).build());
-        userRepository.save(User.builder().username("dr.williams").password(passwordEncoder.encode("doctor")).role(UserRole.DOCTOR).build());
-        userRepository.save(User.builder().username("receptionist01").password(passwordEncoder.encode("reception")).role(UserRole.RECEPTIONIST).build());
+        userRepository.save(User.builder().username("admin").fullName("System Admin").email("admin@mediflow.com").password(passwordEncoder.encode("admin")).role(UserRole.ADMIN).active(true).build());
+        userRepository.save(User.builder().username("dr.smith").fullName("Dr. John Smith").email("dr.smith@mediflow.com").password(passwordEncoder.encode("doctor")).role(UserRole.DOCTOR).active(true).build());
+        userRepository.save(User.builder().username("nurse.jones").fullName("Nurse Sarah Jones").email("nurse.jones@mediflow.com").password(passwordEncoder.encode("nurse")).role(UserRole.NURSE).active(true).build());
+        userRepository.save(User.builder().username("dr.williams").fullName("Dr. Mark Williams").email("dr.williams@mediflow.com").password(passwordEncoder.encode("doctor")).role(UserRole.DOCTOR).active(true).build());
+        userRepository.save(User.builder().username("receptionist01").fullName("Anna Frontdesk").email("anna@mediflow.com").password(passwordEncoder.encode("reception")).role(UserRole.RECEPTIONIST).active(true).build());
+
+        // --- Wards ---
+        Ward wardA = wardRepository.save(Ward.builder().name("Ward A").description("General Care").build());
+        Ward icu = wardRepository.save(Ward.builder().name("ICU").description("Intensive Care Unit").build());
+        Ward wardB = wardRepository.save(Ward.builder().name("Ward B").description("Pediatrics").build());
+        Ward wardC = wardRepository.save(Ward.builder().name("Ward C").description("Maternity").build());
+        Ward emergency = wardRepository.save(Ward.builder().name("Emergency").description("ER / Triage").build());
 
         // --- Rooms ---
-        Room roomA101 = roomRepository.save(Room.builder().name("Room 101").ward("Ward A").capacity(4).build());
-        Room roomA102 = roomRepository.save(Room.builder().name("Room 102").ward("Ward A").capacity(2).build());
-        Room icuSuite = roomRepository.save(Room.builder().name("ICU Suite 1").ward("ICU").capacity(6).build());
-        Room roomB201 = roomRepository.save(Room.builder().name("Room 201").ward("Ward B").capacity(4).build());
-        Room roomC301 = roomRepository.save(Room.builder().name("Room 301").ward("Ward C").capacity(3).build());
-        Room erBay = roomRepository.save(Room.builder().name("ER Bay 1").ward("Emergency").capacity(8).build());
+        Room roomA101 = roomRepository.save(Room.builder().name("Room 101").ward(wardA).capacity(4).build());
+        Room roomA102 = roomRepository.save(Room.builder().name("Room 102").ward(wardA).capacity(2).build());
+        Room icuSuite = roomRepository.save(Room.builder().name("ICU Suite 1").ward(icu).capacity(6).build());
+        Room roomB201 = roomRepository.save(Room.builder().name("Room 201").ward(wardB).capacity(4).build());
+        roomRepository.save(Room.builder().name("Room 301").ward(wardC).capacity(3).build());
+        Room erBay = roomRepository.save(Room.builder().name("ER Bay 1").ward(emergency).capacity(8).build());
 
         // --- Beds ---
         Bed bedA101 = bedRepository.save(Bed.builder().bedNumber("A-101").type(BedType.NORMAL).status(BedStatus.OCCUPIED).room(roomA101).build());
@@ -71,12 +81,12 @@ public class DataSeeder implements CommandLineRunner {
         Bed bedB202 = bedRepository.save(Bed.builder().bedNumber("B-202").type(BedType.NORMAL).status(BedStatus.OCCUPIED).room(roomB201).build());
 
         // --- Patients ---
-        patientRepository.save(Patient.builder().name("John Doe").age(45).condition(PatientCondition.NORMAL).admissionDate(LocalDateTime.now().minusDays(3)).bed(bedA101).build());
-        patientRepository.save(Patient.builder().name("Jane Smith").age(32).condition(PatientCondition.CRITICAL).admissionDate(LocalDateTime.now().minusDays(1)).bed(bedICU01).build());
-        patientRepository.save(Patient.builder().name("Robert Brown").age(67).condition(PatientCondition.SERIOUS).admissionDate(LocalDateTime.now().minusDays(5)).bed(bedB202).build());
-        patientRepository.save(Patient.builder().name("Emily Davis").age(28).condition(PatientCondition.NORMAL).admissionDate(LocalDateTime.now().minusDays(2)).bed(bedA103).build());
-        patientRepository.save(Patient.builder().name("Michael Wilson").age(54).condition(PatientCondition.CRITICAL).admissionDate(LocalDateTime.now().minusDays(1)).bed(bedICU03).build());
-        patientRepository.save(Patient.builder().name("Sarah Johnson").age(41).condition(PatientCondition.SERIOUS).admissionDate(LocalDateTime.now()).build());
+        patientRepository.save(Patient.builder().fullName("John Doe").age(45).condition(PatientCondition.NORMAL).admissionDate(LocalDateTime.now().minusDays(3)).bed(bedA101).build());
+        patientRepository.save(Patient.builder().fullName("Jane Smith").age(32).condition(PatientCondition.CRITICAL).admissionDate(LocalDateTime.now().minusDays(1)).bed(bedICU01).build());
+        patientRepository.save(Patient.builder().fullName("Robert Brown").age(67).condition(PatientCondition.SERIOUS).admissionDate(LocalDateTime.now().minusDays(5)).bed(bedB202).build());
+        patientRepository.save(Patient.builder().fullName("Emily Davis").age(28).condition(PatientCondition.NORMAL).admissionDate(LocalDateTime.now().minusDays(2)).bed(bedA103).build());
+        patientRepository.save(Patient.builder().fullName("Michael Wilson").age(54).condition(PatientCondition.CRITICAL).admissionDate(LocalDateTime.now().minusDays(1)).bed(bedICU03).build());
+        patientRepository.save(Patient.builder().fullName("Sarah Johnson").age(41).condition(PatientCondition.SERIOUS).admissionDate(LocalDateTime.now()).build());
 
         // --- Equipment ---
         equipmentRepository.save(Equipment.builder().name("Ventilator V-100").type("Ventilator").status(EquipmentStatus.IN_USE).room(icuSuite).build());

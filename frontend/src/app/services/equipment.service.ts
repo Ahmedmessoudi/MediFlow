@@ -13,6 +13,18 @@ export class EquipmentService {
     return this.http.get<Equipment[]>(this.API);
   }
 
+  getById(id: number): Observable<Equipment> {
+    return this.http.get<Equipment>(`${this.API}/${id}`);
+  }
+
+  getByWardId(wardId: number): Observable<Equipment[]> {
+    return this.http.get<Equipment[]>(`${this.API}/by-ward/${wardId}`);
+  }
+
+  getByRoomId(roomId: number): Observable<Equipment[]> {
+    return this.http.get<Equipment[]>(`${this.API}/by-room/${roomId}`);
+  }
+
   create(equipment: Equipment): Observable<Equipment> {
     return this.http.post<Equipment>(this.API, equipment);
   }
