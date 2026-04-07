@@ -9,46 +9,46 @@ import { AppUser, UserRole } from '../../models/user.model';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <div class="space-y-6 animate-fade-in">
+    <div class="space-y-4 animate-fade-in">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+          <h1 class="text-xl font-bold flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
             Admin Panel
           </h1>
-          <p class="text-sm text-muted-foreground">Manage system users</p>
+          <p class="text-xs text-muted-foreground">Manage system users</p>
         </div>
         <button (click)="showDialog.set(true)"
-          class="bg-primary text-primary-foreground font-medium py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 text-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          class="bg-primary text-primary-foreground font-medium py-1.5 px-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1.5 text-xs">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           Add User
         </button>
       </div>
 
       <!-- Users Table -->
       <div class="bg-card rounded-xl border overflow-x-auto">
-        <table class="w-full text-sm">
+        <table class="w-full text-xs">
           <thead>
             <tr class="border-b bg-muted/50">
-              <th class="text-left py-3 px-4 font-medium text-muted-foreground">Username</th>
-              <th class="text-left py-3 px-4 font-medium text-muted-foreground">Role</th>
-              <th class="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
+              <th class="text-left py-2 px-3 font-medium text-muted-foreground">Username</th>
+              <th class="text-left py-2 px-3 font-medium text-muted-foreground">Role</th>
+              <th class="text-right py-2 px-3 font-medium text-muted-foreground">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (u of users(); track u.id) {
               <tr class="border-b hover:bg-muted/50 transition-colors">
-                <td class="py-3 px-4 font-medium">{{ u.username }}</td>
-                <td class="py-3 px-4">
-                  <span class="text-xs px-2 py-1 rounded-full border" [class]="roleClass(u.role)">
+                <td class="py-2 px-3 font-medium">{{ u.username }}</td>
+                <td class="py-2 px-3">
+                  <span class="text-[10px] px-2 py-0.5 rounded-full border" [class]="roleClass(u.role)">
                     {{ u.role }}
                   </span>
                 </td>
-                <td class="py-3 px-4 text-right">
+                <td class="py-2 px-3 text-right">
                   <div class="flex items-center justify-end gap-1">
                     <button (click)="deleteUser(u.id!)" title="Delete"
-                      class="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                      class="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                     </button>
                   </div>
                 </td>

@@ -5,7 +5,7 @@ import { Patient } from '../models/patient.model';
 
 @Injectable({ providedIn: 'root' })
 export class PatientService {
-  private readonly API = 'http://localhost:8080/api/patients';
+  private readonly API = '/api/patients';
 
   constructor(private http: HttpClient) {}
 

@@ -8,11 +8,11 @@ import { TopbarComponent } from './topbar.component';
   standalone: true,
   imports: [RouterOutlet, SidebarComponent, TopbarComponent],
   template: `
-    <div class="min-h-screen flex w-full">
-      <app-sidebar [collapsed]="sidebarCollapsed()" (toggleCollapse)="sidebarCollapsed.set(!sidebarCollapsed())" />
-      <div class="flex-1 flex flex-col min-w-0">
+    <div class="h-screen flex w-full overflow-hidden bg-background">
+      <app-sidebar class="block h-full flex-shrink-0" [collapsed]="sidebarCollapsed()" (toggleCollapse)="sidebarCollapsed.set(!sidebarCollapsed())" />
+      <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <app-topbar (toggleSidebar)="sidebarCollapsed.set(!sidebarCollapsed())" />
-        <main class="flex-1 p-6 overflow-auto">
+        <main class="flex-1 p-4 overflow-auto">
           <router-outlet />
         </main>
       </div>

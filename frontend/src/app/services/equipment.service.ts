@@ -5,7 +5,7 @@ import { Equipment } from '../models/equipment.model';
 
 @Injectable({ providedIn: 'root' })
 export class EquipmentService {
-  private readonly API = 'http://localhost:8080/api/equipment';
+  private readonly API = '/api/equipment';
 
   constructor(private http: HttpClient) {}
 

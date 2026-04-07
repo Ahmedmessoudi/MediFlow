@@ -5,7 +5,7 @@ import { Bed } from '../models/bed.model';
 
 @Injectable({ providedIn: 'root' })
 export class BedService {
-  private readonly API = 'http://localhost:8080/api/beds';
+  private readonly API = '/api/beds';
 
   constructor(private http: HttpClient) {}
 

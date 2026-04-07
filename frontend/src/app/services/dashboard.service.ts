@@ -5,7 +5,7 @@ import { DashboardStats } from '../models/dashboard.model';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
-  private readonly API = 'http://localhost:8080/api/dashboard';
+  private readonly API = '/api/dashboard';
 
   constructor(private http: HttpClient) {}
 
