@@ -40,4 +40,8 @@ export class PatientService {
   markCritical(id: number): Observable<Patient> {
     return this.http.put<Patient>(`${this.API}/${id}/mark-critical`, {});
   }
+
+  getAiSummary(id: number): Observable<any> {
+    return this.http.get<any>(`${this.API}/${id}/ai-summary`);
+  }
 }

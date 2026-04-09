@@ -1,9 +1,11 @@
 package com.MediFlow.backend.controller;
 
 import com.MediFlow.backend.dto.PatientRequest;
+import com.MediFlow.backend.dto.AiSummaryResponse;
 import com.MediFlow.backend.entity.Patient;
 import com.MediFlow.backend.enums.PatientCondition;
 import com.MediFlow.backend.service.PatientService;
+import com.MediFlow.backend.service.AiService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,9 +19,11 @@ import java.util.Map;
 public class PatientController {
 
     private final PatientService patientService;
+    private final AiService aiService;
 
-    public PatientController(PatientService patientService) {
+    public PatientController(PatientService patientService, AiService aiService) {
         this.patientService = patientService;
+        this.aiService = aiService;
     }
 
     @GetMapping
@@ -70,5 +74,13 @@ public class PatientController {
     public ResponseEntity<Patient> updateCondition(@PathVariable Long id, @RequestBody Map<String, String> body) {
         PatientCondition condition = PatientCondition.valueOf(body.get("condition").toUpperCase());
         return ResponseEntity.ok(patientService.updateCondition(id, condition));
+    }
+
+    @GetMapping("/{id}/ai-summary")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE')")
+    public ResponseEntity<AiSummaryResponse> generateAiSummary(@PathVariable Long id) {
+        Patient patient = patientService.findById(id);
+        AiSummaryResponse summary = aiService.generatePatientSummary(patient);
+        return ResponseEntity.ok(summary);
     }
 }

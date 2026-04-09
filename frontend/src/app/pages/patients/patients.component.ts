@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { PatientService } from '../../services/patient.service';
 import { AuthService } from '../../services/auth.service';
 import { Patient, PatientCondition } from '../../models/patient.model';
+import { AiSummaryResponse } from '../../models/ai-summary.model';
 
 @Component({
   selector: 'app-patients',
@@ -77,6 +78,10 @@ import { Patient, PatientCondition } from '../../models/patient.model';
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
                         </button>
                       }
+                      <button (click)="generateAiSummary(p.id!)" title="Generate AI Summary"
+                        class="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2v2m0-4h-2V7h2v6z"/></svg>
+                      </button>
                       @if (canDelete) {
                         <button (click)="deletePatient(p.id!)" title="Delete"
                           class="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
@@ -127,6 +132,52 @@ import { Patient, PatientCondition } from '../../models/patient.model';
           </div>
         </div>
       }
+
+      <!-- AI Summary Modal -->
+      @if (showAiSummary()) {
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="showAiSummary.set(false)">
+          <div class="bg-card rounded-xl shadow-2xl w-full max-w-2xl p-5 animate-fade-in max-h-[80vh] overflow-y-auto" (click)="$event.stopPropagation()">
+            @if (aiSummary()) {
+              <div class="space-y-4">
+                <div>
+                  <h2 class="text-lg font-semibold">AI Clinical Summary</h2>
+                  <p class="text-xs text-muted-foreground">{{ aiSummary()?.patientName }}</p>
+                </div>
+
+                <div class="bg-muted/30 rounded-lg p-4 space-y-3">
+                  <div>
+                    <h3 class="text-xs font-semibold text-primary mb-2">Clinical Summary</h3>
+                    <p class="text-xs text-foreground leading-relaxed">{{ aiSummary()?.clinicalSummary }}</p>
+                  </div>
+
+                  <div>
+                    <h3 class="text-xs font-semibold text-primary mb-2">Recommendations</h3>
+                    <div class="text-xs text-foreground whitespace-pre-wrap leading-relaxed">{{ aiSummary()?.recommendations }}</div>
+                  </div>
+
+                  <div class="pt-2 border-t border-border">
+                    <p class="text-[10px] text-muted-foreground">Generated: {{ aiSummary()?.generatedAt }}</p>
+                  </div>
+                </div>
+
+                <div class="flex gap-2">
+                  <button (click)="showAiSummary.set(false)"
+                    class="flex-1 py-1.5 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">Close</button>
+                </div>
+              </div>
+            } @else {
+              <div class="flex items-center justify-center py-8">
+                <div class="text-center">
+                  <div class="inline-block animate-spin">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                  </div>
+                  <p class="text-xs text-muted-foreground mt-3">Generating AI summary...</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
   `
 })
@@ -134,6 +185,8 @@ export class PatientsComponent implements OnInit {
   patients = signal<Patient[]>([]);
   searchTerm = '';
   showDialog = signal(false);
+  showAiSummary = signal(false);
+  aiSummary = signal<AiSummaryResponse | null>(null);
   newPatient: Patient = { fullName: '', age: 0, condition: 'NORMAL' };
 
   canCreate = false;
@@ -207,5 +260,20 @@ export class PatientsComponent implements OnInit {
 
   discharge(id: number) {
     this.patientService.discharge(id).subscribe(() => this.loadPatients());
+  }
+
+  generateAiSummary(id: number) {
+    this.showAiSummary.set(true);
+    this.aiSummary.set(null);
+    
+    this.patientService.getAiSummary(id).subscribe({
+      next: (data) => {
+        this.aiSummary.set(data);
+      },
+      error: (err) => {
+        alert('Failed to generate AI summary. Please try again later.');
+        this.showAiSummary.set(false);
+      }
+    });
   }
 }
