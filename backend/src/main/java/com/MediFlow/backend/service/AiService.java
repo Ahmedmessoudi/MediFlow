@@ -21,11 +21,12 @@ public class AiService {
     @Value("${app.ai.api-key}")
     private String apiKey;
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+    private static final String MODEL_NAME = "openrouter/free";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
-     * Generate clinical summary and recommendations for a patient using Gemini AI
+     * Generate clinical summary and recommendations for a patient using AI
      */
     public AiSummaryResponse generatePatientSummary(Patient patient) {
         try {
@@ -34,8 +35,8 @@ public class AiService {
             // Build the prompt with patient information
             String prompt = buildPrompt(patient);
 
-            // Call Gemini API via REST
-            String aiResponse = callGeminiApi(prompt);
+            // Call OpenRouter API via REST
+            String aiResponse = callOpenRouterApi(prompt);
 
             // Parse response into clinical summary and recommendations
             String[] parts = parseResponse(aiResponse);
@@ -59,9 +60,9 @@ public class AiService {
     }
 
     /**
-     * Call Gemini API using REST (OkHttp)
+     * Call OpenRouter API using REST (OkHttp)
      */
-    private String callGeminiApi(String prompt) throws IOException {
+    private String callOpenRouterApi(String prompt) throws IOException {
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
                 .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
@@ -69,20 +70,16 @@ public class AiService {
 
         // Build request JSON
         JsonObject requestBody = new JsonObject();
+        requestBody.addProperty("model", MODEL_NAME);
         
-        JsonObject part = new JsonObject();
-        part.addProperty("text", prompt);
+        JsonObject message = new JsonObject();
+        message.addProperty("role", "user");
+        message.addProperty("content", prompt);
         
-        JsonArray parts = new JsonArray();
-        parts.add(part);
+        JsonArray messages = new JsonArray();
+        messages.add(message);
         
-        JsonObject content = new JsonObject();
-        content.add("parts", parts);
-        
-        JsonArray contents = new JsonArray();
-        contents.add(content);
-        
-        requestBody.add("contents", contents);
+        requestBody.add("messages", messages);
 
         RequestBody body = RequestBody.create(
                 requestBody.toString(),
@@ -90,27 +87,26 @@ public class AiService {
         );
 
         Request request = new Request.Builder()
-                .url(GEMINI_API_URL + "?key=" + apiKey)
+                .url(OPENROUTER_API_URL)
+                .addHeader("Authorization", "Bearer " + apiKey)
                 .post(body)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() : "Unknown error";
-                throw new RuntimeException("Gemini API error: " + response.code() + " - " + errorBody);
+                throw new RuntimeException("OpenRouter API error: " + response.code() + " - " + errorBody);
             }
 
             String responseBody = response.body().string();
             JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
 
-            // Extract text from Gemini response
+            // Extract text from OpenRouter response
             return jsonResponse
-                    .getAsJsonArray("candidates")
+                    .getAsJsonArray("choices")
                     .get(0).getAsJsonObject()
-                    .getAsJsonObject("content")
-                    .getAsJsonArray("parts")
-                    .get(0).getAsJsonObject()
-                    .get("text").getAsString();
+                    .getAsJsonObject("message")
+                    .get("content").getAsString();
         }
     }
 
