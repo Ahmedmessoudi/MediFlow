@@ -7,9 +7,9 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "wards")
+@Table(name = "departments")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Ward {
+public class Department {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,9 +18,17 @@ public class Ward {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false, unique = true)
+    private String code;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @OneToMany(mappedBy = "ward", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Room> rooms;
+
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Patient> patients;
 }

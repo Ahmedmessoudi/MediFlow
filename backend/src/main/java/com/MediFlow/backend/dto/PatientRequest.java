@@ -2,6 +2,8 @@ package com.MediFlow.backend.dto;
 
 import com.MediFlow.backend.enums.Gender;
 import com.MediFlow.backend.enums.PatientCondition;
+import com.MediFlow.backend.enums.PatientStatus;
+import com.MediFlow.backend.enums.PriorityLevel;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -20,6 +22,14 @@ public class PatientRequest {
 
     @NotNull(message = "Condition is required")
     private PatientCondition condition;
+
+    private PatientStatus status;
+
+    private PriorityLevel priorityLevel;
+
+    private Long departmentId;
+
+    private Long assignedDoctorId;
 
     private LocalDate dateOfBirth;
 

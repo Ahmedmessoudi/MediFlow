@@ -13,15 +13,23 @@ export class PatientService {
     return this.http.get<Patient[]>(this.API);
   }
 
+  getMyPatients(): Observable<Patient[]> {
+    return this.http.get<Patient[]>(`${this.API}/my-patients`);
+  }
+
+  getByDepartment(departmentId: number): Observable<Patient[]> {
+    return this.http.get<Patient[]>(`${this.API}/by-department/${departmentId}`);
+  }
+
   getById(id: number): Observable<Patient> {
     return this.http.get<Patient>(`${this.API}/${id}`);
   }
 
-  create(patient: Patient): Observable<Patient> {
+  create(patient: any): Observable<Patient> {
     return this.http.post<Patient>(this.API, patient);
   }
 
-  update(id: number, patient: Patient): Observable<Patient> {
+  update(id: number, patient: any): Observable<Patient> {
     return this.http.put<Patient>(`${this.API}/${id}`, patient);
   }
 
@@ -37,8 +45,8 @@ export class PatientService {
     return this.http.post<Patient>(`${this.API}/${id}/discharge`, {});
   }
 
-  markCritical(id: number): Observable<Patient> {
-    return this.http.put<Patient>(`${this.API}/${id}/mark-critical`, {});
+  updateCondition(id: number, condition: string): Observable<Patient> {
+    return this.http.put<Patient>(`${this.API}/${id}/condition`, { condition });
   }
 
   getAiSummary(id: number): Observable<any> {

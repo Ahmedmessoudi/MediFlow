@@ -1,3 +1,19 @@
+export interface DepartmentStat {
+  departmentId: number;
+  departmentName: string;
+  departmentCode: string;
+  patientCount: number;
+  bedCount: number;
+  occupiedBeds: number;
+  occupancyRate: number;
+}
+
+export interface DoctorWorkload {
+  doctorId: number;
+  doctorName: string;
+  patientCount: number;
+}
+
 export interface DashboardStats {
   totalBeds: number;
   occupiedBeds: number;
@@ -7,6 +23,8 @@ export interface DashboardStats {
   totalPatients: number;
   criticalPatients: number;
   totalRooms: number;
-  totalWards: number;
+  totalDepartments: number;
   totalEquipment: number;
+  departmentStats?: DepartmentStat[];
+  doctorWorkloads?: DoctorWorkload[];
 }

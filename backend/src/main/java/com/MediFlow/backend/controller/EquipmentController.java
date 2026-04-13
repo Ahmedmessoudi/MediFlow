@@ -30,10 +30,10 @@ public class EquipmentController {
         return ResponseEntity.ok(equipmentService.findById(id));
     }
 
-    @GetMapping("/by-ward/{wardId}")
+    @GetMapping("/by-department/{departmentId}")
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE')")
-    public ResponseEntity<List<Equipment>> getByWardId(@PathVariable Long wardId) {
-        return ResponseEntity.ok(equipmentService.findByWardId(wardId));
+    public ResponseEntity<List<Equipment>> getByDepartmentId(@PathVariable Long departmentId) {
+        return ResponseEntity.ok(equipmentService.findByDepartmentId(departmentId));
     }
 
     @GetMapping("/by-room/{roomId}")

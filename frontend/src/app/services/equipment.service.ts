@@ -17,8 +17,8 @@ export class EquipmentService {
     return this.http.get<Equipment>(`${this.API}/${id}`);
   }
 
-  getByWardId(wardId: number): Observable<Equipment[]> {
-    return this.http.get<Equipment[]>(`${this.API}/by-ward/${wardId}`);
+  getByDepartmentId(departmentId: number): Observable<Equipment[]> {
+    return this.http.get<Equipment[]>(`${this.API}/by-department/${departmentId}`);
   }
 
   getByRoomId(roomId: number): Observable<Equipment[]> {

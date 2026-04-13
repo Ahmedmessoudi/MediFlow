@@ -29,7 +29,7 @@ export interface AuthResponse {
 }
 
 export const ROLE_ROUTES: Record<UserRole, string[]> = {
-  ADMIN: ['/dashboard', '/patients', '/beds', '/wards', '/rooms', '/admin'],
+  ADMIN: ['/dashboard', '/patients', '/beds', '/departments', '/rooms', '/settings', '/admin'],
   DOCTOR: ['/dashboard', '/patients', '/beds'],
   NURSE: ['/dashboard', '/patients', '/beds'],
   RECEPTIONIST: ['/patients', '/beds'],
@@ -46,10 +46,10 @@ export type Permission =
   | 'patient:create' | 'patient:read' | 'patient:update' | 'patient:delete'
   | 'patient:update_condition' | 'patient:assign_bed' | 'patient:discharge'
   | 'bed:read' | 'bed:manage'
-  | 'ward:read' | 'ward:manage'
+  | 'department:read' | 'department:manage'
   | 'room:read' | 'room:manage'
   | 'equipment:read' | 'equipment:manage'
-  | 'user:manage'
+  | 'user:manage' | 'settings:manage'
   | 'dashboard:full' | 'dashboard:limited';
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
@@ -57,25 +57,25 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'patient:create', 'patient:read', 'patient:update', 'patient:delete',
     'patient:update_condition', 'patient:assign_bed', 'patient:discharge',
     'bed:read', 'bed:manage',
-    'ward:read', 'ward:manage',
+    'department:read', 'department:manage',
     'room:read', 'room:manage',
     'equipment:read', 'equipment:manage',
-    'user:manage',
+    'user:manage', 'settings:manage',
     'dashboard:full',
   ],
   DOCTOR: [
     'patient:read', 'patient:update_condition',
-    'bed:read',
+    'bed:read', 'department:read',
     'dashboard:limited',
   ],
   NURSE: [
     'patient:read', 'patient:update',
     'patient:assign_bed', 'patient:discharge',
-    'bed:read', 'bed:manage',
+    'bed:read', 'bed:manage', 'department:read',
     'dashboard:limited',
   ],
   RECEPTIONIST: [
     'patient:create', 'patient:read',
-    'bed:read',
+    'bed:read', 'department:read',
   ],
 };

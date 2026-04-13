@@ -1,10 +1,10 @@
 package com.MediFlow.backend.service;
 
+import com.MediFlow.backend.entity.Department;
 import com.MediFlow.backend.entity.Room;
-import com.MediFlow.backend.entity.Ward;
 import com.MediFlow.backend.exception.ResourceNotFoundException;
+import com.MediFlow.backend.repository.DepartmentRepository;
 import com.MediFlow.backend.repository.RoomRepository;
-import com.MediFlow.backend.repository.WardRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,11 +13,11 @@ import java.util.List;
 public class RoomService {
 
     private final RoomRepository roomRepository;
-    private final WardRepository wardRepository;
+    private final DepartmentRepository departmentRepository;
 
-    public RoomService(RoomRepository roomRepository, WardRepository wardRepository) {
+    public RoomService(RoomRepository roomRepository, DepartmentRepository departmentRepository) {
         this.roomRepository = roomRepository;
-        this.wardRepository = wardRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     public List<Room> findAll() {
@@ -29,17 +29,17 @@ public class RoomService {
                 .orElseThrow(() -> new ResourceNotFoundException("Room", id));
     }
 
-    public List<Room> findByWardId(Long wardId) {
-        return roomRepository.findByWardId(wardId);
+    public List<Room> findByDepartmentId(Long departmentId) {
+        return roomRepository.findByDepartmentId(departmentId);
     }
 
     public Room create(Room room) {
-        if (room.getWard() == null || room.getWard().getId() == null) {
-            throw new IllegalArgumentException("Room must have a ward assigned");
+        if (room.getDepartment() == null || room.getDepartment().getId() == null) {
+            throw new IllegalArgumentException("Room must have a department assigned");
         }
-        Ward ward = wardRepository.findById(room.getWard().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Ward", room.getWard().getId()));
-        room.setWard(ward);
+        Department department = departmentRepository.findById(room.getDepartment().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Department", room.getDepartment().getId()));
+        room.setDepartment(department);
         return roomRepository.save(room);
     }
 
@@ -47,13 +47,13 @@ public class RoomService {
         Room room = findById(id);
         room.setName(updatedRoom.getName());
         room.setCapacity(updatedRoom.getCapacity());
-        
-        if (updatedRoom.getWard() != null && updatedRoom.getWard().getId() != null) {
-            Ward ward = wardRepository.findById(updatedRoom.getWard().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Ward", updatedRoom.getWard().getId()));
-            room.setWard(ward);
+
+        if (updatedRoom.getDepartment() != null && updatedRoom.getDepartment().getId() != null) {
+            Department department = departmentRepository.findById(updatedRoom.getDepartment().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Department", updatedRoom.getDepartment().getId()));
+            room.setDepartment(department);
         }
-        
+
         return roomRepository.save(room);
     }
 

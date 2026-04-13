@@ -3,12 +3,15 @@ package com.MediFlow.backend.controller;
 import com.MediFlow.backend.dto.PatientRequest;
 import com.MediFlow.backend.dto.AiSummaryResponse;
 import com.MediFlow.backend.entity.Patient;
+import com.MediFlow.backend.entity.User;
 import com.MediFlow.backend.enums.PatientCondition;
 import com.MediFlow.backend.service.PatientService;
 import com.MediFlow.backend.service.AiService;
+import com.MediFlow.backend.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,16 +23,32 @@ public class PatientController {
 
     private final PatientService patientService;
     private final AiService aiService;
+    private final UserRepository userRepository;
 
-    public PatientController(PatientService patientService, AiService aiService) {
+    public PatientController(PatientService patientService, AiService aiService, UserRepository userRepository) {
         this.patientService = patientService;
         this.aiService = aiService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE','RECEPTIONIST')")
     public ResponseEntity<List<Patient>> getAll() {
         return ResponseEntity.ok(patientService.findAll());
+    }
+
+    @GetMapping("/my-patients")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<List<Patient>> getMyPatients(Authentication authentication) {
+        User doctor = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(patientService.findByAssignedDoctorId(doctor.getId()));
+    }
+
+    @GetMapping("/by-department/{departmentId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','NURSE')")
+    public ResponseEntity<List<Patient>> getByDepartment(@PathVariable Long departmentId) {
+        return ResponseEntity.ok(patientService.findByDepartmentId(departmentId));
     }
 
     @GetMapping("/{id}")

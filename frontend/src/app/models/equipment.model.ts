@@ -6,5 +6,5 @@ export interface Equipment {
   type: string;
   status: EquipmentStatus;
   room?: any; // Room object
-  ward?: any; // Ward object
+  department?: any; // Department object
 }

@@ -19,8 +19,8 @@ public class Room {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ward_id", nullable = false)
-    private Ward ward;
+    @JoinColumn(name = "department_id", nullable = false)
+    private Department department;
 
     @Column(nullable = false)
     private Integer capacity;

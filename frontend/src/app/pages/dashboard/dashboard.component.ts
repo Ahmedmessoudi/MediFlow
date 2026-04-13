@@ -21,9 +21,11 @@ interface KpiCard {
   template: `
     <div class="space-y-4 animate-fade-in">
       <div>
-        <h1 class="text-xl font-bold text-foreground">Dashboard</h1>
+        <h1 class="text-xl font-bold text-foreground">
+          {{ isDoctor ? 'My Dashboard' : 'Dashboard' }}
+        </h1>
         <p class="text-muted-foreground text-xs">
-          {{ hasFullDashboard ? 'Real-time hospital overview' : 'Limited dashboard view' }}
+          {{ isDoctor ? 'Your patients and workload overview' : (hasFullDashboard ? 'Real-time hospital overview' : 'Limited dashboard view') }}
         </p>
       </div>
 
@@ -55,30 +57,66 @@ interface KpiCard {
       <!-- Charts -->
       @if (hasFullDashboard) {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <!-- Line Chart -->
+          <!-- Department Occupancy Chart -->
           <div class="lg:col-span-2 bg-card rounded-xl border p-4 flex flex-col">
-            <h3 class="text-sm font-semibold mb-3">Bed Usage Over Time</h3>
+            <h3 class="text-sm font-semibold mb-3">Beds per Department</h3>
             <div class="relative flex-1 min-h-[220px] max-h-[260px] w-full">
-              <canvas #lineChart></canvas>
+              <canvas #deptChart></canvas>
             </div>
           </div>
 
-          <!-- Pie Chart -->
+          <!-- Doctor Workload Chart -->
           <div class="bg-card rounded-xl border p-4 flex flex-col">
-            <h3 class="text-sm font-semibold mb-3">Bed Distribution</h3>
+            <h3 class="text-sm font-semibold mb-3">Patients per Doctor</h3>
             <div class="relative flex-1 min-h-[160px] max-h-[200px] w-full">
-              <canvas #pieChart></canvas>
-            </div>
-            <div class="flex flex-wrap gap-2 mt-3 justify-center">
-              @for (item of pieLabels; track item.name) {
-                <div class="flex items-center gap-1 text-[10px]">
-                  <div class="h-2 w-2 rounded-full" [style.backgroundColor]="item.color"></div>
-                  {{ item.name }}
-                </div>
-              }
+              <canvas #doctorChart></canvas>
             </div>
           </div>
         </div>
+
+        <!-- Department Stats Table -->
+        @if (stats()?.departmentStats?.length) {
+          <div class="bg-card rounded-xl border">
+            <div class="p-4 pb-2">
+              <h3 class="text-sm font-semibold">Department Statistics</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="border-b bg-muted/50">
+                    <th class="text-left py-2 px-3 font-medium text-muted-foreground">Department</th>
+                    <th class="text-left py-2 px-3 font-medium text-muted-foreground">Code</th>
+                    <th class="text-left py-2 px-3 font-medium text-muted-foreground">Patients</th>
+                    <th class="text-left py-2 px-3 font-medium text-muted-foreground">Beds</th>
+                    <th class="text-left py-2 px-3 font-medium text-muted-foreground">Occupied</th>
+                    <th class="text-left py-2 px-3 font-medium text-muted-foreground">Occupancy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (dept of stats()?.departmentStats; track dept.departmentId) {
+                    <tr class="border-b hover:bg-muted/50 transition-colors">
+                      <td class="py-2 px-3 font-medium">{{ dept.departmentName }}</td>
+                      <td class="py-2 px-3 font-mono text-[10px]">{{ dept.departmentCode }}</td>
+                      <td class="py-2 px-3">{{ dept.patientCount }}</td>
+                      <td class="py-2 px-3">{{ dept.bedCount }}</td>
+                      <td class="py-2 px-3">{{ dept.occupiedBeds }}</td>
+                      <td class="py-2 px-3">
+                        <div class="flex items-center gap-2">
+                          <div class="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div class="h-full rounded-full transition-all"
+                              [class]="dept.occupancyRate >= 90 ? 'bg-destructive' : dept.occupancyRate >= 70 ? 'bg-warning' : 'bg-success'"
+                              [style.width.%]="dept.occupancyRate"></div>
+                          </div>
+                          <span class="text-[10px] text-muted-foreground">{{ dept.occupancyRate }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
       }
 
       <!-- Alerts -->
@@ -114,23 +152,18 @@ interface KpiCard {
   `
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-  @ViewChild('lineChart') lineChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('pieChart') pieChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('deptChart') deptChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('doctorChart') doctorChartRef!: ElementRef<HTMLCanvasElement>;
 
   kpis = signal<KpiCard[]>([]);
+  stats = signal<DashboardStats | null>(null);
   hasFullDashboard = false;
+  isDoctor = false;
 
   alerts = [
-    { message: 'No ICU beds available in Ward A', severity: 'critical' as const },
+    { message: 'ICU occupancy above threshold', severity: 'critical' as const },
     { message: 'Critical patient waiting for bed assignment', severity: 'critical' as const },
-    { message: 'Ward B at 95% capacity', severity: 'warning' as const },
-  ];
-
-  pieLabels = [
-    { name: 'ICU', color: 'hsl(217, 91%, 60%)' },
-    { name: 'Normal', color: 'hsl(142, 71%, 45%)' },
-    { name: 'Emergency', color: 'hsl(0, 72%, 51%)' },
-    { name: 'Pediatric', color: 'hsl(38, 92%, 50%)' },
+    { message: 'Emergency Department at high capacity', severity: 'warning' as const },
   ];
 
   constructor(
@@ -138,47 +171,38 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     private auth: AuthService
   ) {
     this.hasFullDashboard = this.auth.hasPermission('dashboard:full');
+    this.isDoctor = this.auth.currentRole() === 'DOCTOR';
   }
 
   ngOnInit() {
-    this.dashboardService.getStats().subscribe({
+    const source = this.isDoctor
+      ? this.dashboardService.getDoctorStats()
+      : this.dashboardService.getStats();
+
+    source.subscribe({
       next: (stats) => {
+        this.stats.set(stats);
+        const iconBed = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></svg>';
+        const iconUsers = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+        const iconHeart = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>';
+        const iconActivity = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>';
+        const iconDept = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>';
+
         this.kpis.set([
-          {
-            title: 'Total Beds', value: stats.totalBeds,
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></svg>',
-            trend: '+2%', up: true, color: 'text-primary'
-          },
-          {
-            title: 'Occupied Beds', value: stats.occupiedBeds,
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-            trend: '+5%', up: true, color: 'text-destructive'
-          },
-          {
-            title: 'Available Beds', value: stats.availableBeds,
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>',
-            trend: '-3%', up: false, color: 'text-success'
-          },
-          {
-            title: 'ICU Usage', value: stats.icuUsagePercent + '%',
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
-            trend: '+8%', up: true, color: 'text-warning'
-          },
-          {
-            title: 'Total Wards', value: stats.totalWards,
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
-            trend: '0%', up: true, color: 'text-primary'
-          },
+          { title: this.isDoctor ? 'My Patients' : 'Total Beds', value: this.isDoctor ? stats.totalPatients : stats.totalBeds, icon: this.isDoctor ? iconUsers : iconBed, trend: '+2%', up: true, color: 'text-primary' },
+          { title: 'Occupied Beds', value: stats.occupiedBeds, icon: iconUsers, trend: '+5%', up: true, color: 'text-destructive' },
+          { title: 'Available Beds', value: stats.availableBeds, icon: iconActivity, trend: '-3%', up: false, color: 'text-success' },
+          { title: 'ICU Usage', value: stats.icuUsagePercent + '%', icon: iconHeart, trend: '+8%', up: true, color: 'text-warning' },
+          { title: this.isDoctor ? 'Critical' : 'Departments', value: this.isDoctor ? stats.criticalPatients : stats.totalDepartments, icon: iconDept, trend: '0%', up: true, color: 'text-primary' },
         ]);
       },
       error: () => {
-        // Fallback mock data
         this.kpis.set([
           { title: 'Total Beds', value: 0, icon: '', trend: '0%', up: true, color: 'text-primary' },
           { title: 'Occupied Beds', value: 0, icon: '', trend: '0%', up: true, color: 'text-destructive' },
           { title: 'Available Beds', value: 0, icon: '', trend: '0%', up: false, color: 'text-success' },
           { title: 'ICU Usage', value: '0%', icon: '', trend: '0%', up: true, color: 'text-warning' },
-          { title: 'Total Wards', value: 0, icon: '', trend: '0%', up: true, color: 'text-primary' },
+          { title: 'Departments', value: 0, icon: '', trend: '0%', up: true, color: 'text-primary' },
         ]);
       }
     });
@@ -187,76 +211,43 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     if (this.hasFullDashboard) {
       setTimeout(() => {
-        this.createLineChart();
-        this.createPieChart();
-      }, 100);
+        this.createDeptChart();
+        this.createDoctorChart();
+      }, 300);
     }
   }
 
-  private createLineChart() {
-    if (!this.lineChartRef) return;
-    new Chart(this.lineChartRef.nativeElement, {
-      type: 'line',
+  private createDeptChart() {
+    if (!this.deptChartRef || !this.stats()?.departmentStats?.length) return;
+    const deptStats = this.stats()!.departmentStats!;
+    new Chart(this.deptChartRef.nativeElement, {
+      type: 'bar',
       data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        labels: deptStats.map(d => d.departmentCode),
         datasets: [
-          {
-            label: 'Occupied',
-            data: [170, 180, 175, 190, 185, 187, 192],
-            borderColor: 'hsl(0, 72%, 51%)',
-            backgroundColor: 'hsla(0, 72%, 51%, 0.1)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true,
-            pointRadius: 0,
-          },
-          {
-            label: 'Available',
-            data: [80, 70, 75, 60, 65, 63, 58],
-            borderColor: 'hsl(142, 71%, 45%)',
-            backgroundColor: 'hsla(142, 71%, 45%, 0.1)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true,
-            pointRadius: 0,
-          },
+          { label: 'Total Beds', data: deptStats.map(d => d.bedCount), backgroundColor: 'hsl(217, 91%, 60%)', borderRadius: 4 },
+          { label: 'Occupied', data: deptStats.map(d => d.occupiedBeds), backgroundColor: 'hsl(0, 72%, 51%)', borderRadius: 4 },
         ],
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: true, position: 'top' } },
-        scales: {
-          x: { grid: { color: 'hsl(214, 32%, 91%)' } },
-          y: { grid: { color: 'hsl(214, 32%, 91%)' } },
-        },
+        scales: { x: { grid: { display: false } }, y: { grid: { color: 'hsl(214, 32%, 91%)' } } },
       },
     });
   }
 
-  private createPieChart() {
-    if (!this.pieChartRef) return;
-    new Chart(this.pieChartRef.nativeElement, {
+  private createDoctorChart() {
+    if (!this.doctorChartRef || !this.stats()?.doctorWorkloads?.length) return;
+    const workloads = this.stats()!.doctorWorkloads!;
+    const colors = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(0, 72%, 51%)', 'hsl(280, 70%, 55%)'];
+    new Chart(this.doctorChartRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels: ['ICU', 'Normal', 'Emergency', 'Pediatric'],
-        datasets: [{
-          data: [40, 150, 35, 25],
-          backgroundColor: [
-            'hsl(217, 91%, 60%)',
-            'hsl(142, 71%, 45%)',
-            'hsl(0, 72%, 51%)',
-            'hsl(38, 92%, 50%)',
-          ],
-          borderWidth: 0,
-        }],
+        labels: workloads.map(w => w.doctorName),
+        datasets: [{ data: workloads.map(w => w.patientCount), backgroundColor: colors.slice(0, workloads.length), borderWidth: 0 }],
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        cutout: '60%',
-      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } }, cutout: '55%' },
     });
   }
 }

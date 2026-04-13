@@ -2,6 +2,8 @@ package com.MediFlow.backend.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DashboardStats {
     private long totalBeds;
@@ -12,6 +14,9 @@ public class DashboardStats {
     private long totalPatients;
     private long criticalPatients;
     private long totalRooms;
-    private long totalWards;
+    private long totalDepartments;
     private long totalEquipment;
+
+    private List<DepartmentStat> departmentStats;
+    private List<DoctorWorkload> doctorWorkloads;
 }

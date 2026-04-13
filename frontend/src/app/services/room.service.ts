@@ -17,8 +17,8 @@ export class RoomService {
     return this.http.get<Room>(`${this.API}/${id}`);
   }
 
-  getByWardId(wardId: number): Observable<Room[]> {
-    return this.http.get<Room[]>(`${this.API}/by-ward/${wardId}`);
+  getByDepartmentId(departmentId: number): Observable<Room[]> {
+    return this.http.get<Room[]>(`${this.API}/by-department/${departmentId}`);
   }
 
   create(room: Room): Observable<Room> {

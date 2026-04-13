@@ -28,6 +28,6 @@ public class Equipment {
     private Room room;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ward_id")
-    private Ward ward;
+    @JoinColumn(name = "department_id")
+    private Department department;
 }

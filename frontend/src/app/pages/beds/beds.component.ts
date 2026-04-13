@@ -34,11 +34,11 @@ import { Patient } from '../../models/patient.model';
           <option value="AVAILABLE">Available</option>
           <option value="OCCUPIED">Occupied</option>
         </select>
-        <select [(ngModel)]="wardFilter"
-          class="rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs w-28 focus:outline-none focus:ring-2 focus:ring-ring">
-          <option value="all">All Wards</option>
-          @for (w of wards(); track w) {
-            <option [value]="w">{{ w }}</option>
+        <select [(ngModel)]="departmentFilter"
+          class="rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs w-40 focus:outline-none focus:ring-2 focus:ring-ring">
+          <option value="all">All Departments</option>
+          @for (d of departmentNames(); track d) {
+            <option [value]="d">{{ d }}</option>
           }
         </select>
       </div>
@@ -46,8 +46,9 @@ import { Patient } from '../../models/patient.model';
       <!-- Bed Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         @for (bed of filteredBeds(); track bed.id) {
-          <div class="bg-card rounded-xl border hover:shadow-md transition-all border-l-4"
-            [class]="bed.status === 'AVAILABLE' ? 'border-l-success' : 'border-l-destructive'">
+          <div class="bg-card rounded-xl border hover:shadow-md transition-all border-l-4 cursor-pointer"
+            [class]="bed.status === 'AVAILABLE' ? 'border-l-success' : 'border-l-destructive'"
+            (click)="openDetail(bed)">
             <div class="p-3">
               <div class="flex items-center justify-between mb-2">
                 <span class="font-bold text-sm text-foreground">{{ bed.bedNumber }}</span>
@@ -75,21 +76,86 @@ import { Patient } from '../../models/patient.model';
                 </div>
               }
 
-              <div class="text-[10px] text-muted-foreground mt-1.5">{{ bed.room?.ward?.name || 'N/A' }} — {{ bed.room?.name || '' }}</div>
+              <div class="text-[10px] text-muted-foreground mt-1.5">{{ bed.room?.department?.name || 'N/A' }} — {{ bed.room?.name || '' }}</div>
             </div>
           </div>
         }
       </div>
+
+      <!-- Bed Detail Modal -->
+      @if (selectedBed()) {
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="selectedBed.set(null)">
+          <div class="bg-card rounded-xl shadow-2xl w-full max-w-md p-5 animate-fade-in" (click)="$event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold">Bed Details</h2>
+              <button (click)="selectedBed.set(null)" class="p-1 rounded-lg hover:bg-muted transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <div class="h-10 w-10 rounded-full flex items-center justify-center"
+                  [class]="selectedBed()!.status === 'AVAILABLE' ? 'bg-success/10' : 'bg-destructive/10'">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    [class]="selectedBed()!.status === 'AVAILABLE' ? 'text-success' : 'text-destructive'">
+                    <path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg">{{ selectedBed()!.bedNumber }}</h3>
+                  <div class="flex gap-1.5 mt-0.5">
+                    <span class="text-[10px] px-2 py-0.5 rounded-full border"
+                      [class]="selectedBed()!.type === 'ICU' ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-primary/10 text-primary border-primary/20'">
+                      {{ selectedBed()!.type }}
+                    </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full border"
+                      [class]="selectedBed()!.status === 'AVAILABLE' ? 'bg-success/10 text-success border-success/20' : 'bg-destructive/10 text-destructive border-destructive/20'">
+                      {{ selectedBed()!.status }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Room</p>
+                  <p class="text-xs font-medium">{{ selectedBed()!.room?.name || 'N/A' }}</p>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Department</p>
+                  <p class="text-xs font-medium">{{ selectedBed()!.room?.department?.name || 'N/A' }}</p>
+                </div>
+              </div>
+
+              @if (getPatientForBed(selectedBed()!)) {
+                <div class="p-3 rounded-lg border bg-muted/30">
+                  <p class="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Current Patient</p>
+                  <p class="text-sm font-semibold">{{ getPatientForBed(selectedBed()!)!.fullName }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ getPatientForBed(selectedBed()!)!.condition }} ·
+                    Age {{ getPatientForBed(selectedBed()!)!.age }}
+                  </p>
+                </div>
+              }
+
+              <button (click)="selectedBed.set(null)"
+                class="w-full py-1.5 px-3 rounded-lg border border-input text-xs font-medium hover:bg-muted transition-colors">Close</button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `
 })
 export class BedsComponent implements OnInit {
   beds = signal<Bed[]>([]);
   patients = signal<Patient[]>([]);
-  wards = signal<string[]>([]);
+  departmentNames = signal<string[]>([]);
+  selectedBed = signal<Bed | null>(null);
   typeFilter = 'all';
   statusFilter = 'all';
-  wardFilter = 'all';
+  departmentFilter = 'all';
   canManage = false;
 
   constructor(
@@ -103,8 +169,8 @@ export class BedsComponent implements OnInit {
   ngOnInit() {
     this.bedService.getAll().subscribe(beds => {
       this.beds.set(beds);
-      const wardSet = new Set(beds.map(b => b.room?.ward?.name).filter(Boolean) as string[]);
-      this.wards.set([...wardSet]);
+      const deptSet = new Set(beds.map(b => b.room?.department?.name).filter(Boolean) as string[]);
+      this.departmentNames.set([...deptSet]);
     });
     this.patientService.getAll().subscribe(patients => this.patients.set(patients));
   }
@@ -113,12 +179,16 @@ export class BedsComponent implements OnInit {
     return this.beds().filter(b => {
       if (this.typeFilter !== 'all' && b.type !== this.typeFilter) return false;
       if (this.statusFilter !== 'all' && b.status !== this.statusFilter) return false;
-      if (this.wardFilter !== 'all' && b.room?.ward?.name !== this.wardFilter) return false;
+      if (this.departmentFilter !== 'all' && b.room?.department?.name !== this.departmentFilter) return false;
       return true;
     });
   }
 
   getPatientForBed(bed: Bed): Patient | undefined {
     return this.patients().find(p => p.bed?.id === bed.id);
+  }
+
+  openDetail(bed: Bed) {
+    this.selectedBed.set(bed);
   }
 }

@@ -12,4 +12,8 @@ export class DashboardService {
   getStats(): Observable<DashboardStats> {
     return this.http.get<DashboardStats>(`${this.API}/stats`);
   }
+
+  getDoctorStats(): Observable<DashboardStats> {
+    return this.http.get<DashboardStats>(`${this.API}/doctor-stats`);
+  }
 }

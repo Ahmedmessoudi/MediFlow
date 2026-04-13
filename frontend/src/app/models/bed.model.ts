@@ -1,3 +1,5 @@
+import { Room } from './room.model';
+
 export type BedType = 'NORMAL' | 'ICU';
 export type BedStatus = 'AVAILABLE' | 'OCCUPIED';
 
@@ -8,5 +10,3 @@ export interface Bed {
   status: BedStatus;
   room?: Room | null;
 }
-
-import { Room } from './room.model';
