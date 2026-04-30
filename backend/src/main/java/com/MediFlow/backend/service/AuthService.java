@@ -6,6 +6,7 @@ import com.MediFlow.backend.entity.User;
 import com.MediFlow.backend.repository.UserRepository;
 import com.MediFlow.backend.security.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,11 @@ public class AuthService {
         );
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
+
+        if (request.getRole() != user.getRole()) {
+            throw new BadCredentialsException("Selected role does not match this account");
+        }
 
         if (!user.isActive()) {
             throw new org.springframework.security.authentication.DisabledException("Account is deactivated");

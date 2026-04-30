@@ -42,7 +42,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid username or password", request);
+        String message = ex.getMessage();
+        if (message == null || message.isBlank() || message.equalsIgnoreCase("Bad credentials")) {
+            message = "Invalid username or password";
+        }
+        return buildResponse(HttpStatus.UNAUTHORIZED, message, request);
     }
 
     @ExceptionHandler(DisabledException.class)

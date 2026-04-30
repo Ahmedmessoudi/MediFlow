@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: SecureMediFlow_DbPass!2026
+      POSTGRES_PASSWORD: "123456"
       POSTGRES_DB: mediflow_db
     ports:
       - "5432:5432"
@@ -43,3 +43,6 @@ services:
 
 volumes:
   postgres_data:
+
+
+# POSTGRES_PASSWORD: SecureMediFlow_DbPass!2026

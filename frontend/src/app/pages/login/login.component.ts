@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { UserRole, ROLE_DEFAULT_ROUTE } from '../../models/user.model';
+import { AuthResponse, UserRole, ROLE_DEFAULT_ROUTE } from '../../models/user.model';
 
 interface RoleOption {
   role: UserRole;
@@ -146,6 +146,26 @@ export class LoginComponent {
 
   constructor(private auth: AuthService, private router: Router) {}
 
+  private extractErrorMessage(err: any): string {
+    const fallback = 'Invalid credentials. Please try again.';
+
+    const payload = err?.error;
+    if (!payload) {
+      return err?.message || fallback;
+    }
+
+    if (typeof payload === 'string') {
+      try {
+        const parsed = JSON.parse(payload);
+        return parsed?.message || payload || fallback;
+      } catch {
+        return payload || fallback;
+      }
+    }
+
+    return payload?.message || err?.message || fallback;
+  }
+
   getRoleLabel(): string {
     return this.roleOptions.find(r => r.role === this.selectedRole())?.label || '';
   }
@@ -162,16 +182,16 @@ export class LoginComponent {
       RECEPTIONIST: { username: 'receptionist01', password: 'reception' },
     };
 
-    const cred = { username: this.username, password: this.password };
+    const cred = { username: this.username.trim(), password: this.password, role: this.selectedRole() };
 
     this.auth.login(cred).subscribe({
-      next: (res) => {
+      next: (res: AuthResponse) => {
         this.loading.set(false);
         this.router.navigate([ROLE_DEFAULT_ROUTE[res.role as UserRole]]);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading.set(false);
-        this.error.set('Invalid credentials. Please try again.');
+        this.error.set(this.extractErrorMessage(err));
       }
     });
   }
