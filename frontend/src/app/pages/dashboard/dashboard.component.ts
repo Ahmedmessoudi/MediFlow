@@ -3,13 +3,14 @@ import { Chart, registerables } from 'chart.js';
 import { DashboardService } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
 import { DashboardStats } from '../../models/dashboard.model';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 Chart.register(...registerables);
 
 interface KpiCard {
   title: string;
   value: string | number;
-  icon: string;
+  icon: SafeHtml;
   trend: string;
   up: boolean;
   color: string;
@@ -168,10 +169,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   constructor(
     private dashboardService: DashboardService,
-    private auth: AuthService
+    private auth: AuthService,
+    private sanitizer: DomSanitizer
   ) {
     this.hasFullDashboard = this.auth.hasPermission('dashboard:full');
     this.isDoctor = this.auth.currentRole() === 'DOCTOR';
+  }
+
+  private svg(svgMarkup: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(svgMarkup);
   }
 
   ngOnInit() {
@@ -182,11 +188,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     source.subscribe({
       next: (stats) => {
         this.stats.set(stats);
-        const iconBed = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></svg>';
-        const iconUsers = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
-        const iconHeart = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>';
-        const iconActivity = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>';
-        const iconDept = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>';
+        const iconBed = this.svg('<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></svg>');
+        const iconUsers = this.svg('<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>');
+        const iconHeart = this.svg('<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>');
+        const iconActivity = this.svg('<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>');
+        const iconDept = this.svg('<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>');
 
         this.kpis.set([
           { title: this.isDoctor ? 'My Patients' : 'Total Beds', value: this.isDoctor ? stats.totalPatients : stats.totalBeds, icon: this.isDoctor ? iconUsers : iconBed, trend: '+2%', up: true, color: 'text-primary' },
@@ -198,11 +204,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
       error: () => {
         this.kpis.set([
-          { title: 'Total Beds', value: 0, icon: '', trend: '0%', up: true, color: 'text-primary' },
-          { title: 'Occupied Beds', value: 0, icon: '', trend: '0%', up: true, color: 'text-destructive' },
-          { title: 'Available Beds', value: 0, icon: '', trend: '0%', up: false, color: 'text-success' },
-          { title: 'ICU Usage', value: '0%', icon: '', trend: '0%', up: true, color: 'text-warning' },
-          { title: 'Departments', value: 0, icon: '', trend: '0%', up: true, color: 'text-primary' },
+          { title: 'Total Beds', value: 0, icon: this.svg(''), trend: '0%', up: true, color: 'text-primary' },
+          { title: 'Occupied Beds', value: 0, icon: this.svg(''), trend: '0%', up: true, color: 'text-destructive' },
+          { title: 'Available Beds', value: 0, icon: this.svg(''), trend: '0%', up: false, color: 'text-success' },
+          { title: 'ICU Usage', value: '0%', icon: this.svg(''), trend: '0%', up: true, color: 'text-warning' },
+          { title: 'Departments', value: 0, icon: this.svg(''), trend: '0%', up: true, color: 'text-primary' },
         ]);
       }
     });
