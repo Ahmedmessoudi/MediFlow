@@ -131,10 +131,10 @@ import { DatePipe } from '@angular/common';
 
       <!-- Add Patient Dialog -->
       @if (showDialog()) {
-        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="showDialog.set(false)">
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closeDialog()">
           <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg p-5 animate-fade-in max-h-[85vh] overflow-y-auto" (click)="$event.stopPropagation()">
-            <h2 class="text-base font-semibold mb-3">Add New Patient</h2>
-            <form (ngSubmit)="addPatient()" class="space-y-3">
+            <h2 class="text-base font-semibold mb-3">{{ editingId ? 'Edit' : 'Add' }} Patient</h2>
+            <form (ngSubmit)="savePatient()" class="space-y-3">
               <div class="grid grid-cols-2 gap-3">
                 <div class="col-span-2 space-y-1.5">
                   <label class="text-xs font-medium">Full Name *</label>
@@ -144,6 +144,26 @@ import { DatePipe } from '@angular/common';
                 <div class="space-y-1.5">
                   <label class="text-xs font-medium">Age *</label>
                   <input [(ngModel)]="newPatient.age" name="age" type="number" required placeholder="Age"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">Date of Birth</label>
+                  <input [(ngModel)]="newPatient.dateOfBirth" name="dateOfBirth" type="date"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">Gender</label>
+                  <select [(ngModel)]="newPatient.gender" name="gender"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option [ngValue]="null">Select Gender</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">Phone</label>
+                  <input [(ngModel)]="newPatient.phone" name="phone" type="tel" placeholder="Phone number"
                     class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
                 <div class="space-y-1.5">
@@ -174,6 +194,16 @@ import { DatePipe } from '@angular/common';
                     }
                   </select>
                 </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">City</label>
+                  <input [(ngModel)]="newPatient.addressCity" name="addressCity" placeholder="City"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div class="col-span-2 space-y-1.5">
+                  <label class="text-xs font-medium">Street Address</label>
+                  <input [(ngModel)]="newPatient.addressStreet" name="addressStreet" placeholder="Street address"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
                 <div class="col-span-2 space-y-1.5">
                   <label class="text-xs font-medium">Assigned Doctor</label>
                   <select [(ngModel)]="newPatient.assignedDoctorId" name="assignedDoctorId"
@@ -184,6 +214,16 @@ import { DatePipe } from '@angular/common';
                     }
                   </select>
                 </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">Emergency Contact</label>
+                  <input [(ngModel)]="newPatient.emergencyContactName" name="emergencyContactName" placeholder="Contact name"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">Emergency Phone</label>
+                  <input [(ngModel)]="newPatient.emergencyContactPhone" name="emergencyContactPhone" type="tel" placeholder="Contact phone"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
                 <div class="col-span-2 space-y-1.5">
                   <label class="text-xs font-medium">Medical Notes</label>
                   <textarea [(ngModel)]="newPatient.medicalNotes" name="medicalNotes" rows="2" placeholder="Notes..."
@@ -191,10 +231,12 @@ import { DatePipe } from '@angular/common';
                 </div>
               </div>
               <div class="flex gap-2 pt-2">
-                <button type="button" (click)="showDialog.set(false)"
+                <button type="button" (click)="closeDialog()"
                   class="flex-1 py-1.5 px-3 rounded-lg border border-input text-xs font-medium hover:bg-muted transition-colors">Cancel</button>
                 <button type="submit"
-                  class="flex-1 bg-primary text-primary-foreground py-1.5 px-3 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors">Add Patient</button>
+                  class="flex-1 bg-primary text-primary-foreground py-1.5 px-3 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors">
+                  {{ editingId ? 'Update' : 'Add' }} Patient
+                </button>
               </div>
             </form>
           </div>
@@ -248,8 +290,31 @@ import { DatePipe } from '@angular/common';
                 <p class="text-xs font-medium">{{ selectedPatient()!.admissionDate | date:'medium' }}</p>
               </div>
               <div class="space-y-1">
+                <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Date of Birth</p>
+                <p class="text-xs font-medium">{{ selectedPatient()!.dateOfBirth ? (selectedPatient()!.dateOfBirth | date:'mediumDate') : 'N/A' }}</p>
+              </div>
+              <div class="space-y-1">
                 <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Phone</p>
                 <p class="text-xs font-medium">{{ selectedPatient()!.phone || 'N/A' }}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Address</p>
+                <p class="text-xs font-medium">
+                  {{ selectedPatient()!.addressStreet || 'N/A' }}
+                  @if (selectedPatient()!.addressCity) { · {{ selectedPatient()!.addressCity }} }
+                </p>
+              </div>
+              <div class="space-y-1">
+                <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Emergency Contact</p>
+                <p class="text-xs font-medium">{{ selectedPatient()!.emergencyContactName || 'N/A' }}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Emergency Phone</p>
+                <p class="text-xs font-medium">{{ selectedPatient()!.emergencyContactPhone || 'N/A' }}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="text-[10px] text-muted-foreground uppercase tracking-wider">Discharge Date</p>
+                <p class="text-xs font-medium">{{ selectedPatient()!.dischargeDate ? (selectedPatient()!.dischargeDate | date:'medium') : 'N/A' }}</p>
               </div>
 
               @if (selectedPatient()!.medicalNotes) {
@@ -265,6 +330,12 @@ import { DatePipe } from '@angular/common';
                 class="flex-1 py-1.5 px-3 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
                 🤖 AI Summary
               </button>
+              @if (canUpdate) {
+                <button (click)="editPatient(selectedPatient()!)"
+                  class="flex-1 py-1.5 px-3 rounded-lg border border-input text-xs font-medium hover:bg-muted transition-colors">
+                  Edit Patient
+                </button>
+              }
               <button (click)="selectedPatient.set(null)"
                 class="flex-1 py-1.5 px-3 rounded-lg border border-input text-xs font-medium hover:bg-muted transition-colors">Close</button>
             </div>
@@ -322,12 +393,29 @@ export class PatientsComponent implements OnInit {
   departmentFilter = 'all';
   statusFilter = 'all';
   showDialog = signal(false);
+  editingId: number | null = null;
   showAiSummary = signal(false);
   aiSummary = signal<AiSummaryResponse | null>(null);
   selectedPatient = signal<Patient | null>(null);
-  newPatient: any = { fullName: '', age: 0, condition: 'NORMAL', priorityLevel: 'MEDIUM', departmentId: null, assignedDoctorId: null, medicalNotes: '' };
+  newPatient: any = {
+    fullName: '',
+    age: 0,
+    dateOfBirth: null,
+    gender: null,
+    phone: '',
+    addressCity: '',
+    addressStreet: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    condition: 'NORMAL',
+    priorityLevel: 'MEDIUM',
+    departmentId: null,
+    assignedDoctorId: null,
+    medicalNotes: ''
+  };
 
   canCreate = false;
+  canUpdate = false;
   canDelete = false;
   canUpdateCondition = false;
   canAssignBed = false;
@@ -341,6 +429,7 @@ export class PatientsComponent implements OnInit {
     private auth: AuthService
   ) {
     this.canCreate = this.auth.hasPermission('patient:create');
+    this.canUpdate = this.auth.hasPermission('patient:update');
     this.canDelete = this.auth.hasPermission('patient:delete');
     this.canUpdateCondition = this.auth.hasPermission('patient:update_condition');
     this.canAssignBed = this.auth.hasPermission('patient:assign_bed');
@@ -364,8 +453,13 @@ export class PatientsComponent implements OnInit {
 
   filteredPatients() {
     return this.patients().filter(p => {
-      const term = this.searchTerm.toLowerCase();
-      if (term && !p.fullName?.toLowerCase().includes(term)) return false;
+      const term = this.searchTerm.trim().toLowerCase();
+      if (term) {
+        const name = (p.fullName || '').toLowerCase();
+        const parts = name.split(/\s+/).filter(Boolean);
+        const matchesPrefix = parts.some(part => part.startsWith(term));
+        if (!matchesPrefix) return false;
+      }
       if (this.departmentFilter !== 'all' && p.department?.id !== +this.departmentFilter) return false;
       if (this.statusFilter !== 'all' && p.status !== this.statusFilter) return false;
       return true;
@@ -408,14 +502,78 @@ export class PatientsComponent implements OnInit {
     this.selectedPatient.set(patient);
   }
 
-  addPatient() {
-    this.patientService.create(this.newPatient).subscribe({
+  editPatient(patient: Patient) {
+    this.editingId = patient.id || null;
+    this.newPatient = {
+      fullName: patient.fullName || '',
+      age: patient.age || 0,
+      dateOfBirth: patient.dateOfBirth || null,
+      gender: patient.gender || null,
+      phone: patient.phone || '',
+      addressCity: patient.addressCity || '',
+      addressStreet: patient.addressStreet || '',
+      emergencyContactName: patient.emergencyContactName || '',
+      emergencyContactPhone: patient.emergencyContactPhone || '',
+      condition: patient.condition || 'NORMAL',
+      priorityLevel: patient.priorityLevel || 'MEDIUM',
+      departmentId: patient.department?.id || null,
+      assignedDoctorId: patient.assignedDoctor?.id || null,
+      medicalNotes: patient.medicalNotes || ''
+    };
+    this.selectedPatient.set(null);
+    this.showDialog.set(true);
+  }
+
+  savePatient() {
+    const payload = {
+      ...this.newPatient,
+      dateOfBirth: this.newPatient.dateOfBirth || null,
+      gender: this.newPatient.gender || null,
+      phone: this.normalizeOptional(this.newPatient.phone),
+      addressCity: this.normalizeOptional(this.newPatient.addressCity),
+      addressStreet: this.normalizeOptional(this.newPatient.addressStreet),
+      emergencyContactName: this.normalizeOptional(this.newPatient.emergencyContactName),
+      emergencyContactPhone: this.normalizeOptional(this.newPatient.emergencyContactPhone),
+      medicalNotes: this.normalizeOptional(this.newPatient.medicalNotes),
+    };
+
+    const request$ = this.editingId
+      ? this.patientService.update(this.editingId, payload)
+      : this.patientService.create(payload);
+
+    request$.subscribe({
       next: () => {
-        this.showDialog.set(false);
-        this.newPatient = { fullName: '', age: 0, condition: 'NORMAL', priorityLevel: 'MEDIUM', departmentId: null, assignedDoctorId: null, medicalNotes: '' };
+        this.closeDialog();
         this.loadPatients();
       }
     });
+  }
+
+  private normalizeOptional(value: string | null | undefined): string | null {
+    if (value === null || value === undefined) return null;
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  }
+
+  closeDialog() {
+    this.showDialog.set(false);
+    this.editingId = null;
+    this.newPatient = {
+      fullName: '',
+      age: 0,
+      dateOfBirth: null,
+      gender: null,
+      phone: '',
+      addressCity: '',
+      addressStreet: '',
+      emergencyContactName: '',
+      emergencyContactPhone: '',
+      condition: 'NORMAL',
+      priorityLevel: 'MEDIUM',
+      departmentId: null,
+      assignedDoctorId: null,
+      medicalNotes: ''
+    };
   }
 
   deletePatient(id: number) {

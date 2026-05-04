@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
@@ -139,42 +140,96 @@ public class DataSeeder implements CommandLineRunner {
 
             if (cardiology != null && drSmith != null && bedA101 != null) {
                 patientRepository.save(Patient.builder()
-                        .fullName("John Doe").age(45).condition(PatientCondition.NORMAL)
+                        .fullName("John Doe").age(45)
+                        .dateOfBirth(LocalDate.now().minusYears(45))
+                        .gender(Gender.MALE)
+                        .phone("+1 555 0101")
+                        .addressCity("Boston")
+                        .addressStreet("123 Beacon St")
+                        .emergencyContactName("Mary Doe")
+                        .emergencyContactPhone("+1 555 0102")
+                        .medicalNotes("Hypertension, stable on medication.")
+                        .condition(PatientCondition.NORMAL)
                         .status(PatientStatus.UNDER_TREATMENT).priorityLevel(PriorityLevel.MEDIUM)
                         .admissionDate(LocalDateTime.now().minusDays(3)).bed(bedA101)
                         .department(cardiology).assignedDoctor(drSmith).build());
             }
             if (neurology != null && drWilliams != null && bedICU01 != null) {
                 patientRepository.save(Patient.builder()
-                        .fullName("Jane Smith").age(32).condition(PatientCondition.CRITICAL)
+                        .fullName("Jane Smith").age(32)
+                        .dateOfBirth(LocalDate.now().minusYears(32))
+                        .gender(Gender.FEMALE)
+                        .phone("+1 555 0110")
+                        .addressCity("Cambridge")
+                        .addressStreet("47 Garden Ave")
+                        .emergencyContactName("Paul Smith")
+                        .emergencyContactPhone("+1 555 0111")
+                        .medicalNotes("Severe migraine with neurological symptoms.")
+                        .condition(PatientCondition.CRITICAL)
                         .status(PatientStatus.UNDER_TREATMENT).priorityLevel(PriorityLevel.HIGH)
                         .admissionDate(LocalDateTime.now().minusDays(1)).bed(bedICU01)
                         .department(neurology).assignedDoctor(drWilliams).build());
             }
             if (pediatrics != null && drSmith != null && bedB202 != null) {
                 patientRepository.save(Patient.builder()
-                        .fullName("Robert Brown").age(67).condition(PatientCondition.SERIOUS)
+                        .fullName("Robert Brown").age(67)
+                        .dateOfBirth(LocalDate.now().minusYears(67))
+                        .gender(Gender.MALE)
+                        .phone("+1 555 0120")
+                        .addressCity("Somerville")
+                        .addressStreet("8 Orchard Rd")
+                        .emergencyContactName("Linda Brown")
+                        .emergencyContactPhone("+1 555 0121")
+                        .medicalNotes("Post-operative monitoring.")
+                        .condition(PatientCondition.SERIOUS)
                         .status(PatientStatus.UNDER_TREATMENT).priorityLevel(PriorityLevel.HIGH)
                         .admissionDate(LocalDateTime.now().minusDays(5)).bed(bedB202)
                         .department(pediatrics).assignedDoctor(drSmith).build());
             }
             if (cardiology != null && drSmith != null && bedA103 != null) {
                 patientRepository.save(Patient.builder()
-                        .fullName("Emily Davis").age(28).condition(PatientCondition.NORMAL)
+                        .fullName("Emily Davis").age(28)
+                        .dateOfBirth(LocalDate.now().minusYears(28))
+                        .gender(Gender.FEMALE)
+                        .phone("+1 555 0130")
+                        .addressCity("Boston")
+                        .addressStreet("220 Harbor St")
+                        .emergencyContactName("Kevin Davis")
+                        .emergencyContactPhone("+1 555 0131")
+                        .medicalNotes("Routine checkup and monitoring.")
+                        .condition(PatientCondition.NORMAL)
                         .status(PatientStatus.ADMITTED).priorityLevel(PriorityLevel.LOW)
                         .admissionDate(LocalDateTime.now().minusDays(2)).bed(bedA103)
                         .department(cardiology).assignedDoctor(drSmith).build());
             }
             if (emergency != null && drWilliams != null && bedICU03 != null) {
                 patientRepository.save(Patient.builder()
-                        .fullName("Michael Wilson").age(54).condition(PatientCondition.CRITICAL)
+                        .fullName("Michael Wilson").age(54)
+                        .dateOfBirth(LocalDate.now().minusYears(54))
+                        .gender(Gender.MALE)
+                        .phone("+1 555 0140")
+                        .addressCity("Medford")
+                        .addressStreet("19 Pine St")
+                        .emergencyContactName("Sarah Wilson")
+                        .emergencyContactPhone("+1 555 0141")
+                        .medicalNotes("Trauma patient, continuous monitoring.")
+                        .condition(PatientCondition.CRITICAL)
                         .status(PatientStatus.UNDER_TREATMENT).priorityLevel(PriorityLevel.HIGH)
                         .admissionDate(LocalDateTime.now().minusDays(1)).bed(bedICU03)
                         .department(emergency).assignedDoctor(drWilliams).build());
             }
             if (orthopedics != null && drWilliams != null) {
                 patientRepository.save(Patient.builder()
-                        .fullName("Sarah Johnson").age(41).condition(PatientCondition.SERIOUS)
+                        .fullName("Sarah Johnson").age(41)
+                        .dateOfBirth(LocalDate.now().minusYears(41))
+                        .gender(Gender.FEMALE)
+                        .phone("+1 555 0150")
+                        .addressCity("Quincy")
+                        .addressStreet("92 Oak Ln")
+                        .emergencyContactName("Tom Johnson")
+                        .emergencyContactPhone("+1 555 0151")
+                        .medicalNotes("Fracture recovery plan in progress.")
+                        .condition(PatientCondition.SERIOUS)
                         .status(PatientStatus.ADMITTED).priorityLevel(PriorityLevel.MEDIUM)
                         .admissionDate(LocalDateTime.now())
                         .department(orthopedics).assignedDoctor(drWilliams).build());
