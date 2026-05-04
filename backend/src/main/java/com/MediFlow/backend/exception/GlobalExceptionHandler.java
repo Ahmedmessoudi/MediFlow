@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
         String message = ex.getMessage();
         if (message == null || message.isBlank() || message.equalsIgnoreCase("Bad credentials")) {
-            message = "Invalid username or password";
+            message = "Invalid email or password";
         }
         return buildResponse(HttpStatus.UNAUTHORIZED, message, request);
     }

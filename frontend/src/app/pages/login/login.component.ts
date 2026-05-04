@@ -63,15 +63,16 @@ interface RoleOption {
               </div>
             </div>
 
-            <!-- Username -->
+            <!-- Email -->
             <div class="space-y-1.5">
-              <label for="username" class="text-xs font-medium text-foreground">Username</label>
+              <label for="email" class="text-xs font-medium text-foreground">Email</label>
               <input
-                id="username"
-                [(ngModel)]="username"
-                name="username"
+                id="email"
+                [(ngModel)]="email"
+                name="email"
+                type="email"
                 class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="Enter your username"
+                placeholder="Enter your email"
               />
             </div>
 
@@ -130,7 +131,7 @@ interface RoleOption {
   `
 })
 export class LoginComponent {
-  username = 'admin';
+  email = 'admin@mediflow.com';
   password = 'admin';
   showPassword = signal(false);
   selectedRole = signal<UserRole>('ADMIN');
@@ -175,14 +176,14 @@ export class LoginComponent {
     this.error.set('');
 
     // Use the credentials matching the selected role from seeder
-    const credentials: Record<UserRole, { username: string; password: string }> = {
-      ADMIN: { username: 'admin', password: 'admin' },
-      DOCTOR: { username: 'dr.smith', password: 'doctor' },
-      NURSE: { username: 'nurse.jones', password: 'nurse' },
-      RECEPTIONIST: { username: 'receptionist01', password: 'reception' },
+    const credentials: Record<UserRole, { email: string; password: string }> = {
+      ADMIN: { email: 'admin@mediflow.com', password: 'admin' },
+      DOCTOR: { email: 'dr.smith@mediflow.com', password: 'doctor' },
+      NURSE: { email: 'nurse.jones@mediflow.com', password: 'nurse' },
+      RECEPTIONIST: { email: 'anna@mediflow.com', password: 'reception' },
     };
 
-    const cred = { username: this.username.trim(), password: this.password, role: this.selectedRole() };
+    const cred = { email: this.email.trim(), password: this.password, role: this.selectedRole() };
 
     this.auth.login(cred).subscribe({
       next: (res: AuthResponse) => {

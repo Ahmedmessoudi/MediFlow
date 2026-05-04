@@ -26,12 +26,14 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        String identifier = request.getEmail();
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            new UsernamePasswordAuthenticationToken(identifier, request.getPassword())
         );
 
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
+        User user = userRepository.findByEmail(identifier)
+            .or(() -> userRepository.findByUsername(identifier))
+            .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
         if (request.getRole() != user.getRole()) {
             throw new BadCredentialsException("Selected role does not match this account");
