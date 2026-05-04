@@ -2,11 +2,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../services/settings.service';
 import { SystemSettings } from '../../models/settings.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   template: `
     <div class="space-y-4 animate-fade-in">
       <div>
@@ -57,16 +58,25 @@ import { SystemSettings } from '../../models/settings.model';
 
             <div class="space-y-1.5">
               <label class="text-xs font-medium">Allow Overbooking</label>
+
               <div class="flex items-center gap-2">
-                <button (click)="settings()!.allowOverbooking = !settings()!.allowOverbooking"
-                  class="relative h-5 w-9 rounded-full transition-colors"
-                  [class]="settings()!.allowOverbooking ? 'bg-primary' : 'bg-muted'">
-                  <span class="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform"
-                    [class]="settings()!.allowOverbooking ? 'translate-x-4' : 'translate-x-0.5'"></span>
+                <button 
+                  (click)="settings()!.allowOverbooking = !settings()!.allowOverbooking"
+                  class="relative h-5 w-9 rounded-full transition-colors flex items-center px-[2px]"
+                  [ngClass]="settings()!.allowOverbooking ? 'bg-primary justify-end' : 'bg-muted justify-start'">
+
+                  <span class="h-4 w-4 rounded-full bg-white shadow transition-all"></span>
+
                 </button>
-                <span class="text-xs text-muted-foreground">{{ settings()!.allowOverbooking ? 'Enabled' : 'Disabled' }}</span>
+
+                <span class="text-xs text-muted-foreground">
+                  {{ settings()!.allowOverbooking ? 'Enabled' : 'Disabled' }}
+                </span>
               </div>
-              <p class="text-[10px] text-muted-foreground">Allow assigning beds beyond room capacity</p>
+
+              <p class="text-[10px] text-muted-foreground">
+                Allow assigning beds beyond room capacity
+              </p>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
@@ -25,6 +25,29 @@ import { AppUser, UserRole } from '../../models/user.model';
         </button>
       </div>
 
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-muted-foreground">Role</label>
+          <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)" name="roleFilter"
+            class="rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+            <option value="ALL">All</option>
+            <option value="ADMIN">Admin</option>
+            <option value="DOCTOR">Doctor</option>
+            <option value="NURSE">Nurse</option>
+            <option value="RECEPTIONIST">Receptionist</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-muted-foreground">Status</label>
+          <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" name="statusFilter"
+            class="rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+            <option value="ALL">All</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+      </div>
+
       <!-- Users Table -->
       <div class="bg-card rounded-xl border overflow-x-auto">
         <table class="w-full text-xs">
@@ -38,7 +61,7 @@ import { AppUser, UserRole } from '../../models/user.model';
             </tr>
           </thead>
           <tbody>
-            @for (u of users(); track u.id) {
+            @for (u of filteredUsers(); track u.id) {
               <tr class="border-b hover:bg-muted/50 transition-colors">
                 <td class="py-2 px-3">
                   <div class="font-medium truncate max-w-[150px]" [title]="u.fullName">{{ u.fullName }}</div>
@@ -127,6 +150,18 @@ import { AppUser, UserRole } from '../../models/user.model';
 export class AdminComponent implements OnInit {
   users = signal<AppUser[]>([]);
   showDialog = signal(false);
+  roleFilter = signal<'ALL' | UserRole>('ALL');
+  statusFilter = signal<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+  filteredUsers = computed(() => {
+    const role = this.roleFilter();
+    const status = this.statusFilter();
+    return this.users().filter(user => {
+      const matchesRole = role === 'ALL' || user.role === role;
+      const matchesStatus =
+        status === 'ALL' || (status === 'ACTIVE' ? user.active : !user.active);
+      return matchesRole && matchesStatus;
+    });
+  });
   newUser: any = { fullName: '', username: '', email: '', password: '', role: 'RECEPTIONIST' };
 
   constructor(private userService: UserService) {}
