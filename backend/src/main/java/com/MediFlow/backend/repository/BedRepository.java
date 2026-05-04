@@ -14,8 +14,10 @@ public interface BedRepository extends JpaRepository<Bed, Long> {
     List<Bed> findByStatus(BedStatus status);
     List<Bed> findByTypeAndStatus(BedType type, BedStatus status);
     Optional<Bed> findFirstByTypeAndStatus(BedType type, BedStatus status);
+    Optional<Bed> findFirstByTypeAndStatusAndRoom_Department_Id(BedType type, BedStatus status, Long departmentId);
     long countByStatus(BedStatus status);
     long countByType(BedType type);
     long countByTypeAndStatus(BedType type, BedStatus status);
+    long countByRoomId(Long roomId);
     List<Bed> findByRoomId(Long roomId);
 }

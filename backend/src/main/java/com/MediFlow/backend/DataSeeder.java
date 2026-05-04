@@ -97,6 +97,7 @@ public class DataSeeder implements CommandLineRunner {
             Room room102 = roomRepository.findAll().stream().filter(r -> r.getName().equals("Room 102")).findFirst().orElse(null);
             Room icuSuite = roomRepository.findAll().stream().filter(r -> r.getName().equals("ICU Suite 1")).findFirst().orElse(null);
             Room room201 = roomRepository.findAll().stream().filter(r -> r.getName().equals("Room 201")).findFirst().orElse(null);
+            Room erBay = roomRepository.findAll().stream().filter(r -> r.getName().equals("ER Bay 1")).findFirst().orElse(null);
 
             if (room101 != null) {
                 bedRepository.save(Bed.builder().bedNumber("A-101").type(BedType.NORMAL).status(BedStatus.OCCUPIED).room(room101).build());
@@ -117,6 +118,12 @@ public class DataSeeder implements CommandLineRunner {
             if (room201 != null) {
                 bedRepository.save(Bed.builder().bedNumber("B-201").type(BedType.NORMAL).status(BedStatus.AVAILABLE).room(room201).build());
                 bedRepository.save(Bed.builder().bedNumber("B-202").type(BedType.NORMAL).status(BedStatus.OCCUPIED).room(room201).build());
+            }
+            if (erBay != null) {
+                bedRepository.save(Bed.builder().bedNumber("ER-01").type(BedType.NORMAL).status(BedStatus.AVAILABLE).room(erBay).build());
+                bedRepository.save(Bed.builder().bedNumber("ER-02").type(BedType.NORMAL).status(BedStatus.OCCUPIED).room(erBay).build());
+                bedRepository.save(Bed.builder().bedNumber("ER-03").type(BedType.NORMAL).status(BedStatus.AVAILABLE).room(erBay).build());
+                bedRepository.save(Bed.builder().bedNumber("ER-04").type(BedType.NORMAL).status(BedStatus.AVAILABLE).room(erBay).build());
             }
             System.out.println("✅ Beds seeded.");
         }

@@ -102,7 +102,7 @@ import { DatePipe } from '@angular/common';
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
                         </button>
                       }
-                      @if (canAssignBed && !p.bed && p.status !== 'DISCHARGED') {
+                      @if (canAssignBed && !p.bed && p.status === 'ADMITTED') {
                         <button (click)="allocateBed(p.id!)" title="Assign Bed"
                           class="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></svg>

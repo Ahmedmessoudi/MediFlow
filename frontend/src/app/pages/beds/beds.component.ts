@@ -1,10 +1,14 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BedService } from '../../services/bed.service';
+import { DepartmentService } from '../../services/department.service';
 import { PatientService } from '../../services/patient.service';
+import { RoomService } from '../../services/room.service';
 import { AuthService } from '../../services/auth.service';
 import { Bed } from '../../models/bed.model';
+import { Department } from '../../models/department.model';
 import { Patient } from '../../models/patient.model';
+import { Room } from '../../models/room.model';
 
 @Component({
   selector: 'app-beds',
@@ -12,11 +16,20 @@ import { Patient } from '../../models/patient.model';
   imports: [FormsModule],
   template: `
     <div class="space-y-4 animate-fade-in">
-      <div>
-        <h1 class="text-xl font-bold">Beds Management</h1>
-        <p class="text-xs text-muted-foreground">
-          {{ canManage ? 'Manage bed assignments' : 'View bed availability' }}
-        </p>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold">Beds Management</h1>
+          <p class="text-xs text-muted-foreground">
+            {{ canManage ? 'Manage bed assignments' : 'View bed availability' }}
+          </p>
+        </div>
+        @if (canManage) {
+          <button (click)="openAddDialog()"
+            class="bg-primary text-primary-foreground font-medium py-1.5 px-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1.5 text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            Add Bed
+          </button>
+        }
       </div>
 
       <!-- Filters -->
@@ -37,8 +50,8 @@ import { Patient } from '../../models/patient.model';
         <select [(ngModel)]="departmentFilter"
           class="rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs w-40 focus:outline-none focus:ring-2 focus:ring-ring">
           <option value="all">All Departments</option>
-          @for (d of departmentNames(); track d) {
-            <option [value]="d">{{ d }}</option>
+          @for (d of departments(); track d.id) {
+            <option [value]="d.id">{{ d.name }}</option>
           }
         </select>
       </div>
@@ -145,41 +158,117 @@ import { Patient } from '../../models/patient.model';
           </div>
         </div>
       }
+
+      <!-- Add Bed Dialog -->
+      @if (showAddDialog()) {
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closeAddDialog()">
+          <div class="bg-card rounded-xl shadow-2xl w-full max-w-md p-5 animate-fade-in" (click)="$event.stopPropagation()">
+            <h2 class="text-base font-semibold mb-3">Add Bed</h2>
+            <form (ngSubmit)="createBed()" class="space-y-3">
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium">Bed Number *</label>
+                <input [(ngModel)]="newBed.bedNumber" name="bedNumber" required placeholder="e.g. A-105"
+                  class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">Type *</label>
+                  <select [(ngModel)]="newBed.type" name="type"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="NORMAL">Normal</option>
+                    <option value="ICU">ICU</option>
+                  </select>
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-medium">Status *</label>
+                  <select [(ngModel)]="newBed.status" name="status"
+                    class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="AVAILABLE">Available</option>
+                    <option value="OCCUPIED">Occupied</option>
+                  </select>
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium">Department *</label>
+                <select [(ngModel)]="newBed.departmentId" name="departmentId" (ngModelChange)="onNewBedDepartmentChange()"
+                  class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+                  <option [ngValue]="null">Select Department</option>
+                  @for (d of departments(); track d.id) {
+                    <option [ngValue]="d.id">{{ d.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium">Room *</label>
+                <select [(ngModel)]="newBed.roomId" name="roomId" [disabled]="!newBed.departmentId"
+                  class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+                  <option [ngValue]="null">Select Room</option>
+                  @for (r of getRoomsForDepartment(newBed.departmentId); track r.id) {
+                    <option [ngValue]="r.id">{{ r.name }}</option>
+                  }
+                </select>
+                @if (newBed.departmentId && getRoomsForDepartment(newBed.departmentId).length === 0) {
+                  <p class="text-[10px] text-muted-foreground">No rooms available for this department.</p>
+                }
+              </div>
+              <div class="flex gap-2 pt-2">
+                <button type="button" (click)="closeAddDialog()"
+                  class="flex-1 py-1.5 px-3 rounded-lg border border-input text-xs font-medium hover:bg-muted transition-colors">Cancel</button>
+                <button type="submit"
+                  class="flex-1 bg-primary text-primary-foreground py-1.5 px-3 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors">Create Bed</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
     </div>
   `
 })
 export class BedsComponent implements OnInit {
   beds = signal<Bed[]>([]);
   patients = signal<Patient[]>([]);
-  departmentNames = signal<string[]>([]);
+  departments = signal<Department[]>([]);
+  rooms = signal<Room[]>([]);
   selectedBed = signal<Bed | null>(null);
   typeFilter = 'all';
   statusFilter = 'all';
   departmentFilter = 'all';
   canManage = false;
+  showAddDialog = signal(false);
+  newBed: any = {
+    bedNumber: '',
+    type: 'NORMAL',
+    status: 'AVAILABLE',
+    departmentId: null,
+    roomId: null,
+  };
 
   constructor(
     private bedService: BedService,
+    private departmentService: DepartmentService,
     private patientService: PatientService,
+    private roomService: RoomService,
     private auth: AuthService
   ) {
     this.canManage = this.auth.hasPermission('bed:manage');
   }
 
   ngOnInit() {
-    this.bedService.getAll().subscribe(beds => {
-      this.beds.set(beds);
-      const deptSet = new Set(beds.map(b => b.room?.department?.name).filter(Boolean) as string[]);
-      this.departmentNames.set([...deptSet]);
-    });
+    this.loadBeds();
+    this.departmentService.getAll().subscribe(depts => this.departments.set(depts));
+    this.roomService.getAll().subscribe(rooms => this.rooms.set(rooms));
     this.patientService.getAll().subscribe(patients => this.patients.set(patients));
+  }
+
+  loadBeds() {
+    this.bedService.getAll().subscribe(beds => this.beds.set(beds));
   }
 
   filteredBeds() {
     return this.beds().filter(b => {
       if (this.typeFilter !== 'all' && b.type !== this.typeFilter) return false;
       if (this.statusFilter !== 'all' && b.status !== this.statusFilter) return false;
-      if (this.departmentFilter !== 'all' && b.room?.department?.name !== this.departmentFilter) return false;
+      if (this.departmentFilter !== 'all' && b.room?.department?.id !== +this.departmentFilter) return false;
       return true;
     });
   }
@@ -190,5 +279,52 @@ export class BedsComponent implements OnInit {
 
   openDetail(bed: Bed) {
     this.selectedBed.set(bed);
+  }
+
+  getRoomsForDepartment(departmentId: number | null): Room[] {
+    if (!departmentId) return [];
+    return this.rooms().filter(r => r.department?.id === departmentId);
+  }
+
+  onNewBedDepartmentChange() {
+    this.newBed.roomId = null;
+  }
+
+  openAddDialog() {
+    this.showAddDialog.set(true);
+  }
+
+  closeAddDialog() {
+    this.showAddDialog.set(false);
+    this.newBed = {
+      bedNumber: '',
+      type: 'NORMAL',
+      status: 'AVAILABLE',
+      departmentId: null,
+      roomId: null,
+    };
+  }
+
+  createBed() {
+    const bedNumber = (this.newBed.bedNumber || '').trim();
+    if (!bedNumber || !this.newBed.roomId) {
+      alert('Please fill in bed number, department, and room.');
+      return;
+    }
+
+    const payload: Bed = {
+      bedNumber,
+      type: this.newBed.type,
+      status: this.newBed.status,
+      room: { id: this.newBed.roomId } as Room,
+    };
+
+    this.bedService.create(payload).subscribe({
+      next: () => {
+        this.closeAddDialog();
+        this.loadBeds();
+      },
+      error: (err) => alert(err.error?.message || 'Failed to create bed')
+    });
   }
 }

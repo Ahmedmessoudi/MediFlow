@@ -121,6 +121,22 @@ public class PatientService {
         if (request.getDepartmentId() != null) {
             Department dept = departmentRepository.findById(request.getDepartmentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Department", request.getDepartmentId()));
+
+            if (patient.getBed() != null) {
+                Long currentDeptId = patient.getBed().getRoom() != null && patient.getBed().getRoom().getDepartment() != null
+                        ? patient.getBed().getRoom().getDepartment().getId()
+                        : null;
+                if (currentDeptId != null && !currentDeptId.equals(dept.getId())) {
+                    Bed bed = patient.getBed();
+                    bed.setStatus(BedStatus.AVAILABLE);
+                    bedRepository.save(bed);
+                    patient.setBed(null);
+                    if (request.getStatus() == null) {
+                        patient.setStatus(PatientStatus.ADMITTED);
+                    }
+                }
+            }
+
             patient.setDepartment(dept);
         }
 
@@ -170,8 +186,20 @@ public class PatientService {
 
         BedType requiredType = (patient.getCondition() == PatientCondition.CRITICAL) ? BedType.ICU : BedType.NORMAL;
 
-        Bed bed = bedRepository.findFirstByTypeAndStatus(requiredType, BedStatus.AVAILABLE)
-                .orElseThrow(() -> new IllegalArgumentException("No " + requiredType + " beds available! Alert: Patient waiting for bed assignment."));
+        Bed bed;
+        if (patient.getDepartment() != null) {
+            Long deptId = patient.getDepartment().getId();
+            String deptName = patient.getDepartment().getName();
+            bed = bedRepository.findFirstByTypeAndStatusAndRoom_Department_Id(requiredType, BedStatus.AVAILABLE, deptId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No " + requiredType + " beds available in " + deptName + " department!"
+                ));
+        } else {
+            bed = bedRepository.findFirstByTypeAndStatus(requiredType, BedStatus.AVAILABLE)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No " + requiredType + " beds available! Alert: Patient waiting for bed assignment."
+                ));
+        }
 
         bed.setStatus(BedStatus.OCCUPIED);
         bedRepository.save(bed);
