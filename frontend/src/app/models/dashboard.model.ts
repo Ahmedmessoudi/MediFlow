@@ -22,6 +22,7 @@ export interface DashboardStats {
   icuUsagePercent: number;
   totalPatients: number;
   criticalPatients: number;
+  criticalUnassignedPatients: number;
   totalRooms: number;
   totalDepartments: number;
   totalEquipment: number;

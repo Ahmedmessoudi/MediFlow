@@ -16,6 +16,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     List<Patient> findByDepartmentId(Long departmentId);
     long countByStatus(PatientStatus status);
     long countByCondition(PatientCondition condition);
+    long countByConditionAndBedIsNullAndStatusNot(PatientCondition condition, PatientStatus status);
     long countByDepartmentId(Long departmentId);
     long countByAssignedDoctorId(Long doctorId);
+    long countByAssignedDoctorIdAndConditionAndBedIsNullAndStatusNot(Long doctorId, PatientCondition condition, PatientStatus status);
 }

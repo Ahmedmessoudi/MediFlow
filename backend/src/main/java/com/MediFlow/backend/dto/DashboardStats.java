@@ -13,6 +13,7 @@ public class DashboardStats {
     private double icuUsagePercent;
     private long totalPatients;
     private long criticalPatients;
+    private long criticalUnassignedPatients;
     private long totalRooms;
     private long totalDepartments;
     private long totalEquipment;

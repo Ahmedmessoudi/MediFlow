@@ -9,6 +9,7 @@ import com.MediFlow.backend.entity.User;
 import com.MediFlow.backend.enums.BedStatus;
 import com.MediFlow.backend.enums.BedType;
 import com.MediFlow.backend.enums.PatientCondition;
+import com.MediFlow.backend.enums.PatientStatus;
 import com.MediFlow.backend.enums.UserRole;
 import com.MediFlow.backend.repository.*;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,10 @@ public class DashboardService {
 
         long totalPatients = patientRepository.count();
         long criticalPatients = patientRepository.countByCondition(PatientCondition.CRITICAL);
+        long criticalUnassignedPatients = patientRepository.countByConditionAndBedIsNullAndStatusNot(
+                PatientCondition.CRITICAL,
+                PatientStatus.DISCHARGED
+        );
 
         // Department-wise stats
         List<Department> departments = departmentRepository.findAll();
@@ -101,6 +106,7 @@ public class DashboardService {
                 .icuUsagePercent(Math.round(icuUsagePercent * 10.0) / 10.0)
                 .totalPatients(totalPatients)
                 .criticalPatients(criticalPatients)
+                .criticalUnassignedPatients(criticalUnassignedPatients)
                 .totalRooms(roomRepository.count())
                 .totalDepartments(departmentRepository.count())
                 .totalEquipment(equipmentRepository.count())
@@ -126,6 +132,11 @@ public class DashboardService {
                 .totalPatients(myPatients)
                 .criticalPatients(patientRepository.findByAssignedDoctorId(doctorId).stream()
                         .filter(p -> p.getCondition() != null && p.getCondition() == PatientCondition.CRITICAL).count())
+                .criticalUnassignedPatients(patientRepository.countByAssignedDoctorIdAndConditionAndBedIsNullAndStatusNot(
+                        doctorId,
+                        PatientCondition.CRITICAL,
+                        PatientStatus.DISCHARGED
+                ))
                 .totalRooms(roomRepository.count())
                 .totalDepartments(departmentRepository.count())
                 .totalEquipment(equipmentRepository.count())

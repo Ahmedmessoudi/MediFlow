@@ -28,6 +28,13 @@ import { Department } from '../../models/department.model';
             Add Room
           </button>
         }
+        @if (canManageRooms && activeTab() === 'equipment') {
+          <button (click)="showEquipmentDialog.set(true)"
+            class="bg-primary text-primary-foreground font-medium py-1.5 px-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1.5 text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            Add Equipment
+          </button>
+        }
       </div>
 
       <!-- Tabs -->
@@ -107,7 +114,11 @@ import { Department } from '../../models/department.model';
                   <td class="py-2 px-3">{{ eq.type }}</td>
                   <td class="py-2 px-3 text-muted-foreground">{{ eq.room?.name || 'Unassigned' }}</td>
                   <td class="py-2 px-3">
-                    <span class="text-[10px] px-2 py-0.5 rounded-full border" [class]="statusClass(eq.status)">
+                    <span
+                      class="text-[10px] px-2 py-0.5 rounded-full border"
+                      [class]="statusClass(eq.status) + (canManageRooms ? ' cursor-pointer' : '')"
+                      (click)="canManageRooms ? toggleEquipmentStatus(eq) : null"
+                      title="Click to toggle status">
                       {{ eq.status === 'IN_USE' ? 'in-use' : 'available' }}
                     </span>
                   </td>
@@ -154,6 +165,51 @@ import { Department } from '../../models/department.model';
           </div>
         </div>
       }
+
+      <!-- Add Equipment Dialog -->
+      @if (showEquipmentDialog()) {
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="showEquipmentDialog.set(false)">
+          <div class="bg-card rounded-xl shadow-2xl w-full max-w-md p-5 animate-fade-in" (click)="$event.stopPropagation()">
+            <h2 class="text-base font-semibold mb-3">Add New Equipment</h2>
+            <form (ngSubmit)="addEquipment()" class="space-y-3">
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium">Name</label>
+                <input [(ngModel)]="newEquipment.name" name="eqName" required placeholder="e.g. Ventilator"
+                  class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium">Type</label>
+                <input [(ngModel)]="newEquipment.type" name="eqType" required placeholder="e.g. Respiratory"
+                  class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium">Status</label>
+                <select [(ngModel)]="newEquipment.status" name="eqStatus" required
+                  class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+                  <option [ngValue]="'AVAILABLE'">Available</option>
+                  <option [ngValue]="'IN_USE'">In Use</option>
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-medium">Room (optional)</label>
+                <select [(ngModel)]="newEquipment.roomId" name="eqRoomId"
+                  class="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring">
+                  <option [ngValue]="null">Unassigned</option>
+                  @for (r of rooms(); track r.id) {
+                    <option [ngValue]="r.id">{{ r.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="flex gap-2 pt-2">
+                <button type="button" (click)="showEquipmentDialog.set(false)"
+                  class="flex-1 py-1.5 px-3 rounded-lg border border-input text-xs font-medium hover:bg-muted transition-colors">Cancel</button>
+                <button type="submit"
+                  class="flex-1 bg-primary text-primary-foreground py-1.5 px-3 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors">Add Equipment</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
     </div>
   `
 })
@@ -164,7 +220,9 @@ export class RoomsComponent implements OnInit {
   equipment = signal<Equipment[]>([]);
   departments = signal<Department[]>([]);
   showRoomDialog = signal(false);
+  showEquipmentDialog = signal(false);
   newRoom: any = { name: '', departmentId: null, capacity: 1 };
+  newEquipment: any = { name: '', type: '', status: 'AVAILABLE', roomId: null };
   canManageRooms = false;
 
   constructor(
@@ -199,6 +257,19 @@ export class RoomsComponent implements OnInit {
       : 'bg-success/15 text-success border-success/30';
   }
 
+  toggleEquipmentStatus(eq: Equipment) {
+    if (!eq.id) {
+      return;
+    }
+    const nextStatus: EquipmentStatus = eq.status === 'IN_USE' ? 'AVAILABLE' : 'IN_USE';
+    const updated: Equipment = { ...eq, status: nextStatus };
+    this.equipmentService.update(eq.id, updated).subscribe({
+      next: saved => {
+        this.equipment.set(this.equipment().map(item => (item.id === saved.id ? saved : item)));
+      }
+    });
+  }
+
   addRoom() {
     const room = {
       name: this.newRoom.name,
@@ -210,6 +281,22 @@ export class RoomsComponent implements OnInit {
         this.showRoomDialog.set(false);
         this.newRoom = { name: '', departmentId: null, capacity: 1 };
         this.roomService.getAll().subscribe(r => this.rooms.set(r));
+      }
+    });
+  }
+
+  addEquipment() {
+    const equipment: Equipment = {
+      name: this.newEquipment.name,
+      type: this.newEquipment.type,
+      status: this.newEquipment.status,
+      room: this.newEquipment.roomId ? { id: this.newEquipment.roomId } : null
+    };
+    this.equipmentService.create(equipment).subscribe({
+      next: () => {
+        this.showEquipmentDialog.set(false);
+        this.newEquipment = { name: '', type: '', status: 'AVAILABLE', roomId: null };
+        this.equipmentService.getAll().subscribe(e => this.equipment.set(e));
       }
     });
   }
